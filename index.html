@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Cuadrillas - Distribución</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Inspección de Redes Eléctricas</h1>
+        <p>ENEE - Sector Distribución</p>
+    </header>
+
+    <main>
+        <form id="formulario-inspeccion">
+            <label>Cuadrilla:</label>
+            <select id="cuadrilla">
+                <option>Cuadrilla 1 - Zona Centro</option>
+                <option>Cuadrilla 2 - Zona Norte</option>
+                <option>Cuadrilla 3 - Zona Sur</option>
+            </select>
+
+            <label>Actividad:</label>
+            <select id="actividad">
+                <option value="inspeccion">1. Inspección de Circuitos</option>
+                <option value="daños">2. Reporte de Elementos en Mal Estado</option>
+                <option value="horas">3. Reporte de Horas Extras</option>
+            </select>
+
+            <div id="contenedor-mapa">
+                <h3>Ubicación Geográfica</h3>
+                <div id="map"></div>
+                <p><strong>Coordenadas:</strong> <span id="coords">Esperando ubicación...</span></p>
+                <button type="button" class="btn-gps" onclick="obtenerGPS()">Obtener Ubicación GPS</button>
+            </div>
+
+            <label>Observaciones Técnicas:</label>
+            <textarea id="obs" rows="4" placeholder="Describa el estado de postes, transformadores o crucetas..."></textarea>
+
+            <button type="button" class="btn-guardar" onclick="generarReporte()">Descargar Reporte PDF</button>
+        </form>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
