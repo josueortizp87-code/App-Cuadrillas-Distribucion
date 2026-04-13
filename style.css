@@ -34,3 +34,27 @@ select, textarea { width: 100%; padding: 12px; background: var(--card-bg); borde
 .status-btn.active { background: var(--accent); color: black; font-weight: bold; }
 .btn-regresar { background: none; border: none; color: var(--accent); cursor: pointer; margin-bottom: 10px; }
 .btn-enviar { background: var(--accent); color: black; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; }
+#buscar-material {
+    width: 100%;
+    padding: 10px;
+    background: #333;
+    border: 1px solid var(--accent);
+    color: white;
+    border-radius: 5px 5px 0 0;
+}
+
+#lista-materiales {
+    width: 100%;
+    background: var(--card-bg);
+    color: white;
+    border: 1px solid #444;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    height: 150px;
+}
+
+#lista-materiales option {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    white-space: normal; /* Para que los nombres largos se vean en varias líneas */
+}
