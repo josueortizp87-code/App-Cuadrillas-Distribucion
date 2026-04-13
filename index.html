@@ -16,63 +16,102 @@
             <h1>SECTOR JUTICALPA</h1>
             <p>Ing. Josué Ortiz</p>
         </header>
-
         <div class="grid-menu">
-            <div class="card" onclick="mostrarSeccion('mantenimiento')">
+            <div class="card" onclick="mostrarSubmenu('mantenimiento')">
                 <i class="fas fa-tools"></i>
                 <span>Mantenimiento</span>
             </div>
-            <div class="card" onclick="mostrarSeccion('operaciones')">
-                <i class="fas fa-bolt"></i>
-                <span>Operaciones</span>
             </div>
-            <div class="card" onclick="mostrarSeccion('poda')">
-                <i class="fas fa-tree"></i>
+    </div>
+
+    <div id="submenu-mantenimiento" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h2>MANTENIMIENTO</h2>
+        <div class="grid-menu">
+            <div class="card" onclick="mostrarFormulario('inspeccion')">
+                <i class="fas fa-search"></i>
+                <span>Inspección</span>
+            </div>
+            <div class="card" onclick="mostrarFormulario('poda')">
+                <i class="fas fa-leaf"></i>
                 <span>Poda Comunitaria</span>
-            </div>
-            <div class="card" onclick="mostrarSeccion('combustible')">
-                <i class="fas fa-gas-pump"></i>
-                <span>Combustible</span>
             </div>
         </div>
     </div>
 
-    <div id="seccion-formulario" class="container" style="display:none;">
-      <button class="btn-regresar" onclick="volverAlInicio()"><i class="fas fa-arrow-left"></i> Regresar</button>
-      <h2 id="titulo-actividad">Actividad</h2>
+    <div id="form-inspeccion-container" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="mostrarSubmenu('mantenimiento')"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h2 id="titulo-form">REGISTRO DE INSPECCIÓN</h2>
 
-      <div id="map" style="height: 250px; border-radius: 10px; margin-bottom: 15px;"></div>
+        <form id="form-detalle">
+            <label>ID Inspección:</label>
+            <input type="text" id="id-insp" readonly class="input-readonly">
 
-      <form id="form-inspeccion">
-          <label>Circuito:</label>
-          <select id="circuito">
-              <option value="JUT-L379">JUT-L379</option>
-              <option value="JUT-L380">JUT-L380</option>
-              <option value="JUT-L381">JUT-L381</option>
-              <option value="JUT-L382">JUT-L382</option>
-              <option value="CAT-L375">CAT-L375</option>
-              <option value="CAT-L376">CAT-L376</option>
-              <option value="GMC-L377A">GMC-L377A RS-CAMPAMENTO</option>
-          </select>
+            <label>Circuito:</label>
+            <select id="circuito-insp">
+                <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
+                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
+                <option>GMC-L377A</option>
+            </select>
 
-          <label>Buscar Material:</label>
-          <input type="text" id="buscar-material" placeholder="Escribe para filtrar..." onkeyup="filtrarMateriales()">
-          <select id="lista-materiales" size="5">
-              </select>
+            <label>Nombre de Inspección:</label>
+            <input type="text" id="nombre-insp" placeholder="Ej: Inspección Poste 45-JUT">
 
-          <label>Estado de la Tarea:</label>
-          <div class="status-buttons">
-              <button type="button" class="status-btn" onclick="cambiarEstado(this)">INICIO</button>
-              <button type="button" class="status-btn active" onclick="cambiarEstado(this)">EJECUCIÓN</button>
-              <button type="button" class="status-btn" onclick="cambiarEstado(this)">FINALIZADO</button>
-          </div>
+            <label>Fecha:</label>
+            <input type="date" id="fecha-insp">
 
-          <label>Observaciones:</label>
-          <textarea id="obs" rows="4" placeholder="Notas del sector..."></textarea>
+            <label>Tipo de Inspección:</label>
+            <select id="tipo-insp">
+                <option>DESPEJE</option><option>CAMARA ACÚSTICA</option>
+                <option>PROYECTO</option><option>MEJORA DE RED</option>
+            </select>
 
-          <button type="button" class="btn-enviar" onclick="generarReporte()">GUARDAR REPORTE PDF</button>
-      </form>
-  </div>  
+            <label>Actividad:</label>
+            <select id="actividad-insp">
+                <option>CONTROL DE VEGETACIÓN</option><option>POSTES</option>
+                <option>CONDUCTORES</option><option>TRANSFORMADORES</option>
+                <option>CRUCETES</option><option>AISLAMIENTO</option>
+                <option>EQUIPO DE PROTECCIÓN</option>
+            </select>
+
+            <label>Prioridad:</label>
+            <div class="selector-botones" id="prioridad-insp">
+                <button type="button" onclick="seleccionar(this, 'ALTA')">ALTA</button>
+                <button type="button" onclick="seleccionar(this, 'MEDIA')">MEDIA</button>
+                <button type="button" onclick="seleccionar(this, 'BAJA')">BAJA</button>
+            </div>
+
+            <label>Tipo de Cuadrilla:</label>
+            <select id="cuadrilla-insp">
+                <option>LIVIANA</option><option>PESADA</option><option>GRUA</option>
+                <option>CANASTA</option><option>COMUNITARIA</option><option>PODADOR DE ALTURA</option>
+            </select>
+
+            <label>Cantidad de Personal:</label>
+            <input type="number" id="cant-personal" placeholder="Número de técnicos">
+
+            <label>Evidencia Fotográfica (3 Fotos):</label>
+            <div class="foto-grid">
+                <input type="file" accept="image/*" capture="camera" id="foto1">
+                <input type="file" accept="image/*" capture="camera" id="foto2">
+                <input type="file" accept="image/*" capture="camera" id="foto3">
+            </div>
+
+            <label>Ubicación:</label>
+            <div id="map" style="height: 250px; border-radius: 10px;"></div>
+            <p class="coords-display">Coordenadas: <span id="txt-coords">0, 0</span></p>
+
+            <label>Observaciones:</label>
+            <textarea id="obs-insp" rows="3"></textarea>
+
+            <label>Estado:</label>
+            <select id="estado-insp">
+                <option>PENDIENTE</option><option>EJECUCIÓN</option><option>TERMINADA</option>
+            </select>
+
+            <button type="button" class="btn-enviar" onclick="finalizarInspeccion()">FINALIZAR REGISTRO</button>
+        </form>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>

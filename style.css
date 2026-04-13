@@ -1,60 +1,29 @@
-:root {
-    --bg-color: #1a1a1b;
-    --card-bg: #2d2d2e;
-    --accent: #f1c40f; /* Amarillo ENEE */
-    --text: #ffffff;
-}
-
-body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; }
-.container { padding: 20px; max-width: 600px; margin: auto; }
-
-header { text-align: center; margin-bottom: 30px; }
-header h1 { font-size: 1.5rem; color: var(--accent); margin: 10px 0 0 0; }
-
-/* Cuadrícula de Botones */
-.grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.card {
-    background: var(--card-bg);
-    padding: 30px 10px;
-    text-align: center;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: transform 0.2s;
-    border-bottom: 4px solid var(--accent);
-}
-.card:active { transform: scale(0.95); }
-.card i { font-size: 2.5rem; color: var(--accent); display: block; margin-bottom: 10px; }
-.card span { font-weight: bold; font-size: 0.9rem; }
-
-/* Formulario */
-label { display: block; margin-top: 15px; color: var(--accent); font-weight: bold; }
-select, textarea { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid #444; color: white; border-radius: 8px; margin-top: 5px; }
-.status-buttons { display: flex; gap: 5px; margin-top: 5px; }
-.status-btn { flex: 1; padding: 10px; border: none; background: #444; color: white; border-radius: 5px; font-size: 0.7rem; }
-.status-btn.active { background: var(--accent); color: black; font-weight: bold; }
-.btn-regresar { background: none; border: none; color: var(--accent); cursor: pointer; margin-bottom: 10px; }
-.btn-enviar { background: var(--accent); color: black; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; }
-#buscar-material {
+/* Estilos para entradas de datos */
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
     width: 100%;
-    padding: 10px;
-    background: #333;
-    border: 1px solid var(--accent);
-    color: white;
-    border-radius: 5px 5px 0 0;
-}
-
-#lista-materiales {
-    width: 100%;
-    background: var(--card-bg);
-    color: white;
+    padding: 12px;
+    background: #2d2d2e;
     border: 1px solid #444;
-    border-top: none;
-    border-radius: 0 0 5px 5px;
-    height: 150px;
+    color: white;
+    border-radius: 8px;
+    margin-top: 5px;
+    font-size: 1rem;
 }
 
-#lista-materiales option {
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    white-space: normal; /* Para que los nombres largos se vean en varias líneas */
+.input-readonly {
+    background: #1a1a1b !important;
+    color: var(--accent) !important;
+    font-weight: bold;
+    border: none !important;
 }
+
+/* Selector de Prioridad */
+.selector-botones { display: flex; gap: 10px; margin-top: 5px; }
+.selector-botones button {
+    flex: 1; padding: 10px; border: 1px solid var(--accent);
+    background: transparent; color: white; border-radius: 8px; cursor: pointer;
+}
+.selector-botones button.active { background: var(--accent); color: black; font-weight: bold; }
+
+.foto-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+.coords-display { font-size: 0.8rem; color: var(--accent); margin-top: 5px; text-align: center; }
