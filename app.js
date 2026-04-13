@@ -1,3 +1,16 @@
+function mostrarSeccion(nombre) {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('seccion-formulario').style.display = 'block';
+    document.getElementById('titulo-actividad').innerText = nombre.toUpperCase();
+
+    // Forzar al mapa a renderizarse correctamente cuando se muestra la sección
+    setTimeout(() => { map.invalidateSize(); }, 200);
+}
+
+function volverAlInicio() {
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('seccion-formulario').style.display = 'none';
+}
 // Inicializar el mapa
 var map = L.map('map').setView([14.65, -86.21], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
