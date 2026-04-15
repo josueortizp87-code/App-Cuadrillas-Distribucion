@@ -18,7 +18,7 @@
             <p>Ing. Josué Ortiz - UTCD</p>
         </header>
         <div class="grid-menu">
-            <div class="card" onclick="mostrarSubmenu('mantenimiento')">
+            <div class="card" onclick="mostrarSubmenu()">
                 <i class="fas fa-tools"></i>
                 <span>Mantenimiento</span>
             </div>
@@ -27,9 +27,7 @@
 
     <div id="submenu-mantenimiento" class="container" style="display:none;">
         <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-chevron-left"></i> VOLVER</button>
-        <header>
-            <h1>MANTENIMIENTO</h1>
-        </header>
+        <header><h1>MANTENIMIENTO</h1></header>
         <div class="grid-menu">
             <div class="card" onclick="mostrarFormulario('inspeccion')">
                 <i class="fas fa-clipboard-check"></i>
@@ -44,63 +42,96 @@
 
     <div id="form-inspeccion-container" class="container" style="display:none;">
         <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-chevron-left"></i> VOLVER</button>
-        <h2>REGISTRO INSPECCIÓN</h2>
+        <h2>REGISTRO DE INSPECCIÓN</h2>
         <form id="form-insp">
             <label>ID Inspección:</label>
             <input type="text" id="id-insp" readonly class="input-readonly">
             <label>Circuito:</label>
-            <select id="circ-insp">
+            <select id="circuito-insp">
                 <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
+                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
             </select>
-            <label>Nombre de Inspección:</label>
-            <input type="text" id="nom-insp">
-            <button type="button" class="btn-enviar" onclick="finalizarActividad('Inspección')">GUARDAR</button>
+            <label>Nombre de la Inspección:</label>
+            <input type="text" id="nombre-insp">
+            <label>Fecha:</label>
+            <input type="date" id="fecha-insp">
+            <label>Tipo de Inspección:</label>
+            <select id="tipo-insp">
+                <option>DESPEJE</option><option>CAMARA ACÚSTICA</option><option>PROYECTO</option><option>MEJORA DE RED</option>
+            </select>
+            <label>Actividad:</label>
+            <select id="actividad-insp">
+                <option>CONTROL DE VEGETACIÓN</option><option>POSTES</option><option>CONDUCTORES</option><option>TRANSFORMADORES</option>
+            </select>
+            <label>Prioridad:</label>
+            <select id="prioridad-insp">
+                <option>ALTA</option><option>MEDIA</option><option>BAJA</option>
+            </select>
+            <label>Coordenada:</label>
+            <div id="map-insp" style="height: 200px; border-radius: 8px;"></div>
+            <p class="coords-text">Punto: <span id="coords-val-insp">0, 0</span></p>
+            <button type="button" class="btn-enviar" onclick="alert('Guardado')">GUARDAR INSPECCIÓN</button>
         </form>
     </div>
 
     <div id="form-poda-container" class="container" style="display:none;">
         <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-chevron-left"></i> VOLVER</button>
-        <header>
-            <h1>INFORME DE PODA</h1>
-        </header>
+        <header><h1>PODA COMUNITARIA</h1></header>
 
         <form id="form-poda">
-            <label>Circuito y Zona de Trabajo:</label>
-            <input type="text" id="zona-poda" placeholder="Ej: Poda en Troncal RS CULMI">
+            <label>Circuito y Zona:</label>
+            <input type="text" id="zona-poda">
 
             <div class="grid-2">
-                <div>
-                    <label>Hora Inicio:</label>
-                    <input type="time" id="h-inicio">
-                </div>
-                <div>
-                    <label>Hora Final:</label>
-                    <input type="time" id="h-final">
-                </div>
+                <div><label>Hora Inicio:</label><input type="time" id="h-ini"></div>
+                <div><label>Hora Final:</label><input type="time" id="h-fin"></div>
             </div>
 
             <label>Métricas:</label>
             <div class="grid-3">
-                <input type="number" id="m-brecha" placeholder="M. Brecha">
-                <input type="number" id="m-poda" placeholder="M. Poda">
-                <input type="number" id="postes-r" placeholder="Postes">
+                <input type="number" id="brecha" placeholder="M. Brecha">
+                <input type="number" id="poda-m" placeholder="M. Poda">
+                <input type="number" id="postes" placeholder="Postes">
             </div>
 
-            <label>Personal Contratado:</label>
-            <div id="lista-personal"></div>
-            <button type="button" class="btn-secundario" onclick="agregarPersona()">+ AGREGAR PERSONA</button>
-
-            <label>Transporte (L.):</label>
-            <input type="number" id="pago-trans">
-
-            <label>Fotos (Antes, Durante, Después):</label>
+            <label>Fotos del Grupo e Identidades:</label>
             <div class="grid-3">
-                <input type="file" accept="image/*" capture="camera" id="f-antes">
-                <input type="file" accept="image/*" capture="camera" id="f-durante">
-                <input type="file" accept="image/*" capture="camera" id="f-despues">
+                <div class="foto-box"><span>GRUPO</span><input type="file" accept="image/*" capture="camera"></div>
+                <div class="foto-box"><span>ID FRENTE</span><input type="file" accept="image/*" capture="camera"></div>
+                <div class="foto-box"><span>ID REVERSO</span><input type="file" accept="image/*" capture="camera"></div>
             </div>
 
-            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME PDF</button>
+            <label>Fotos Inicio (3):</label>
+            <div class="grid-3">
+                <input type="file" accept="image/*" capture="camera">
+                <input type="file" accept="image/*" capture="camera">
+                <input type="file" accept="image/*" capture="camera">
+            </div>
+            <label>Fotos Ejecución (3):</label>
+            <div class="grid-3">
+                <input type="file" accept="image/*" capture="camera">
+                <input type="file" accept="image/*" capture="camera">
+                <input type="file" accept="image/*" capture="camera">
+            </div>
+            <label>Fotos Final (3):</label>
+            <div class="grid-3">
+                <input type="file" accept="image/*" capture="camera">
+                <input type="file" accept="image/*" capture="camera">
+                <input type="file" accept="image/*" capture="camera">
+            </div>
+
+            <label>Foto Recibo de Caja:</label>
+            <input type="file" accept="image/*" capture="camera">
+
+            <label>Ubicación (Inicio y Final):</label>
+            <div id="map-poda" style="height: 250px; border-radius: 8px;"></div>
+            <p class="coords-text">Inicio: <span id="gps-ini">0,0</span> | Final: <span id="gps-fin">0,0</span></p>
+            <div class="grid-2">
+                <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">MARCAR INICIO</button>
+                <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">MARCAR FINAL</button>
+            </div>
+
+            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME FINAL</button>
         </form>
     </div>
 
