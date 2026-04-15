@@ -92,9 +92,18 @@
 
             <label>Evidencia Fotográfica (3 Fotos):</label>
             <div class="grid-3">
-                <input type="file" accept="image/*" id="insp-f1">
-                <input type="file" accept="image/*" id="insp-f2">
-                <input type="file" accept="image/*" id="insp-f3">
+                <div class="foto-input-group">
+                    <input type="file" accept="image/*" id="insp-f1" onchange="previsualizar(this, 'p-insp-1')">
+                    <div id="p-insp-1" class="preview-box"></div>
+                </div>
+                <div class="foto-input-group">
+                    <input type="file" accept="image/*" id="insp-f2" onchange="previsualizar(this, 'p-insp-2')">
+                    <div id="p-insp-2" class="preview-box"></div>
+                </div>
+                <div class="foto-input-group">
+                    <input type="file" accept="image/*" id="insp-f3" onchange="previsualizar(this, 'p-insp-3')">
+                    <div id="p-insp-3" class="preview-box"></div>
+                </div>
             </div>
 
             <label>Ubicación:</label>
@@ -146,18 +155,48 @@
             <label>Responsables:</label>
             <input type="text" id="resp-super" placeholder="Responsable Supervisión">
             <input type="text" id="resp-activ" placeholder="Responsable Actividades">
+
             <label>Fotos Grupo e Identidades:</label>
             <div class="grid-3">
-                <div class="foto-box"><span>GRUPO</span><input type="file" id="f-grupo"></div>
-                <div class="foto-box"><span>ID FRENTE</span><input type="file" id="f-id-f"></div>
-                <div class="foto-box"><span>ID REVÉS</span><input type="file" id="f-id-r"></div>
+                <div class="foto-input-group">
+                    <span>GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
+                    <div id="p-f-grupo" class="preview-box"></div>
+                </div>
+                <div class="foto-input-group">
+                    <span>ID FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
+                    <div id="p-f-idf" class="preview-box"></div>
+                </div>
+                <div class="foto-input-group">
+                    <span>ID REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')">
+                    <div id="p-f-idr" class="preview-box"></div>
+                </div>
             </div>
-            <label>Fotos Antes / Durante / Después:</label>
-            <div class="grid-3"><input type="file" id="f-ini-1"><input type="file" id="f-ini-2"><input type="file" id="f-ini-3"></div>
-            <div class="grid-3"><input type="file" id="f-eje-1"><input type="file" id="f-eje-2"><input type="file" id="f-eje-3"></div>
-            <div class="grid-3"><input type="file" id="f-fin-1"><input type="file" id="f-fin-2"><input type="file" id="f-fin-3"></div>
+
+            <label>Fotos Antes:</label>
+            <div class="grid-3">
+                <div class="foto-input-group"><input type="file" id="f-ini-1" onchange="previsualizar(this, 'p-ini-1')"><div id="p-ini-1" class="preview-box"></div></div>
+                <div class="foto-input-group"><input type="file" id="f-ini-2" onchange="previsualizar(this, 'p-ini-2')"><div id="p-ini-2" class="preview-box"></div></div>
+                <div class="foto-input-group"><input type="file" id="f-ini-3" onchange="previsualizar(this, 'p-ini-3')"><div id="p-ini-3" class="preview-box"></div></div>
+            </div>
+            <label>Fotos Durante:</label>
+            <div class="grid-3">
+                <div class="foto-input-group"><input type="file" id="f-eje-1" onchange="previsualizar(this, 'p-eje-1')"><div id="p-eje-1" class="preview-box"></div></div>
+                <div class="foto-input-group"><input type="file" id="f-eje-2" onchange="previsualizar(this, 'p-eje-2')"><div id="p-eje-2" class="preview-box"></div></div>
+                <div class="foto-input-group"><input type="file" id="f-eje-3" onchange="previsualizar(this, 'p-eje-3')"><div id="p-eje-3" class="preview-box"></div></div>
+            </div>
+            <label>Fotos Después:</label>
+            <div class="grid-3">
+                <div class="foto-input-group"><input type="file" id="f-fin-1" onchange="previsualizar(this, 'p-fin-1')"><div id="p-fin-1" class="preview-box"></div></div>
+                <div class="foto-input-group"><input type="file" id="f-fin-2" onchange="previsualizar(this, 'p-fin-2')"><div id="p-fin-2" class="preview-box"></div></div>
+                <div class="foto-input-group"><input type="file" id="f-fin-3" onchange="previsualizar(this, 'p-fin-3')"><div id="p-fin-3" class="preview-box"></div></div>
+            </div>
+
             <label>Recibo Final:</label>
-            <input type="file" id="f-recibo">
+            <div class="foto-input-group">
+                <input type="file" id="f-recibo" onchange="previsualizar(this, 'p-f-recibo')">
+                <div id="p-f-recibo" class="preview-box" style="height: 100px;"></div>
+            </div>
+
             <label>GPS:</label>
             <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
             <div class="grid-2">

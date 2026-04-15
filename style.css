@@ -181,3 +181,31 @@ input, select, textarea {
     padding: 5px;
     border-radius: 4px;
 }
+/* Contenedor de la foto y su miniatura */
+.foto-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: #1e1e1e;
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #333;
+}
+
+/* El recuadro donde aparecerá la imagen */
+.preview-box {
+    width: 100%;
+    height: 60px; /* Altura de la miniatura */
+    background: #121212;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px dashed #444;
+}
+
+/* Ajuste para que el texto del input no estorbe */
+input[type="file"] {
+    font-size: 10px;
+}

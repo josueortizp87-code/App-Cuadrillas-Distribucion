@@ -118,3 +118,23 @@ async function generarPDFPoda() {
 
     doc.save("Informe_Poda_Final.pdf");
 }
+function previsualizar(input, idContenedor) {
+    const contenedor = document.getElementById(idContenedor);
+    contenedor.innerHTML = ""; // Limpiar si ya había una foto
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover"; // Para que no se deforme
+            img.style.borderRadius = "4px";
+            contenedor.appendChild(img);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
