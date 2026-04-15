@@ -3,119 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENEE - Gestión de Distribución</title>
+    <title>ENEE UTCD - Gestión de Campo</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
     <div id="dashboard" class="container">
         <header>
-            <img src="https://logodownload.org/wp-content/uploads/2019/08/enee-logo.png" alt="Logo ENEE" style="height: 50px;">
+            <img src="https://logodownload.org/wp-content/uploads/2019/08/enee-logo.png" alt="Logo ENEE" style="height: 40px;">
             <h1>SECTOR JUTICALPA</h1>
-            <p>Ing. Josué Ortiz</p>
+            <p>Ing. Josué Ortiz - UTCD</p>
         </header>
         <div class="grid-menu">
             <div class="card" onclick="mostrarSubmenu('mantenimiento')">
                 <i class="fas fa-tools"></i>
                 <span>Mantenimiento</span>
             </div>
-            </div>
+        </div>
     </div>
 
     <div id="submenu-mantenimiento" class="container" style="display:none;">
-    <button class="btn-regresar" onclick="volverAlDashboard()">
-        <i class="fas fa-chevron-left"></i> VOLVER AL INICIO
-    </button>
-    <header>
-        <h1>MANTENIMIENTO</h1>
-        <p>Seleccione tipo de actividad</p>
-    </header>
-
-    <div class="grid-menu">
-        <div class="card" onclick="mostrarFormulario('inspeccion')">
-            <i class="fas fa-clipboard-check"></i>
-            <span>Inspección</span>
-        </div>
-        <div class="card" onclick="mostrarFormulario('poda')">
-            <i class="fas fa-leaf"></i>
-            <span>Poda</span>
+        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-chevron-left"></i> VOLVER</button>
+        <header>
+            <h1>MANTENIMIENTO</h1>
+        </header>
+        <div class="grid-menu">
+            <div class="card" onclick="mostrarFormulario('inspeccion')">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Inspección</span>
+            </div>
+            <div class="card" onclick="mostrarFormulario('poda')">
+                <i class="fas fa-leaf"></i>
+                <span>Poda Comunitaria</span>
+            </div>
         </div>
     </div>
-</div>
 
     <div id="form-inspeccion-container" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="mostrarSubmenu('mantenimiento')"><i class="fas fa-arrow-left"></i> Volver</button>
-        <h2 id="titulo-form">REGISTRO DE INSPECCIÓN</h2>
-
-        <form id="form-detalle">
+        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-chevron-left"></i> VOLVER</button>
+        <h2>REGISTRO INSPECCIÓN</h2>
+        <form id="form-insp">
             <label>ID Inspección:</label>
             <input type="text" id="id-insp" readonly class="input-readonly">
-
             <label>Circuito:</label>
-            <select id="circuito-insp">
+            <select id="circ-insp">
                 <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
-                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
-                <option>GMC-L377A</option>
             </select>
-
             <label>Nombre de Inspección:</label>
-            <input type="text" id="nombre-insp" placeholder="Ej: Inspección Poste 45-JUT">
+            <input type="text" id="nom-insp">
+            <button type="button" class="btn-enviar" onclick="finalizarActividad('Inspección')">GUARDAR</button>
+        </form>
+    </div>
 
-            <label>Fecha:</label>
-            <input type="date" id="fecha-insp">
+    <div id="form-poda-container" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-chevron-left"></i> VOLVER</button>
+        <header>
+            <h1>INFORME DE PODA</h1>
+        </header>
 
-            <label>Tipo de Inspección:</label>
-            <select id="tipo-insp">
-                <option>DESPEJE</option><option>CAMARA ACÚSTICA</option>
-                <option>PROYECTO</option><option>MEJORA DE RED</option>
-            </select>
+        <form id="form-poda">
+            <label>Circuito y Zona de Trabajo:</label>
+            <input type="text" id="zona-poda" placeholder="Ej: Poda en Troncal RS CULMI">
 
-            <label>Actividad:</label>
-            <select id="actividad-insp">
-                <option>CONTROL DE VEGETACIÓN</option><option>POSTES</option>
-                <option>CONDUCTORES</option><option>TRANSFORMADORES</option>
-                <option>CRUCETES</option><option>AISLAMIENTO</option>
-                <option>EQUIPO DE PROTECCIÓN</option>
-            </select>
-
-            <label>Prioridad:</label>
-            <div class="selector-botones" id="prioridad-insp">
-                <button type="button" onclick="seleccionar(this, 'ALTA')">ALTA</button>
-                <button type="button" onclick="seleccionar(this, 'MEDIA')">MEDIA</button>
-                <button type="button" onclick="seleccionar(this, 'BAJA')">BAJA</button>
+            <div class="grid-2">
+                <div>
+                    <label>Hora Inicio:</label>
+                    <input type="time" id="h-inicio">
+                </div>
+                <div>
+                    <label>Hora Final:</label>
+                    <input type="time" id="h-final">
+                </div>
             </div>
 
-            <label>Tipo de Cuadrilla:</label>
-            <select id="cuadrilla-insp">
-                <option>LIVIANA</option><option>PESADA</option><option>GRUA</option>
-                <option>CANASTA</option><option>COMUNITARIA</option><option>PODADOR DE ALTURA</option>
-            </select>
-
-            <label>Cantidad de Personal:</label>
-            <input type="number" id="cant-personal" placeholder="Número de técnicos">
-
-            <label>Evidencia Fotográfica (3 Fotos):</label>
-            <div class="foto-grid">
-                <input type="file" accept="image/*" capture="camera" id="foto1">
-                <input type="file" accept="image/*" capture="camera" id="foto2">
-                <input type="file" accept="image/*" capture="camera" id="foto3">
+            <label>Métricas:</label>
+            <div class="grid-3">
+                <input type="number" id="m-brecha" placeholder="M. Brecha">
+                <input type="number" id="m-poda" placeholder="M. Poda">
+                <input type="number" id="postes-r" placeholder="Postes">
             </div>
 
-            <label>Ubicación:</label>
-            <div id="map" style="height: 250px; border-radius: 10px;"></div>
-            <p class="coords-display">Coordenadas: <span id="txt-coords">0, 0</span></p>
+            <label>Personal Contratado:</label>
+            <div id="lista-personal"></div>
+            <button type="button" class="btn-secundario" onclick="agregarPersona()">+ AGREGAR PERSONA</button>
 
-            <label>Observaciones:</label>
-            <textarea id="obs-insp" rows="3"></textarea>
+            <label>Transporte (L.):</label>
+            <input type="number" id="pago-trans">
 
-            <label>Estado:</label>
-            <select id="estado-insp">
-                <option>PENDIENTE</option><option>EJECUCIÓN</option><option>TERMINADA</option>
-            </select>
+            <label>Fotos (Antes, Durante, Después):</label>
+            <div class="grid-3">
+                <input type="file" accept="image/*" capture="camera" id="f-antes">
+                <input type="file" accept="image/*" capture="camera" id="f-durante">
+                <input type="file" accept="image/*" capture="camera" id="f-despues">
+            </div>
 
-            <button type="button" class="btn-enviar" onclick="finalizarInspeccion()">FINALIZAR REGISTRO</button>
+            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME PDF</button>
         </form>
     </div>
 

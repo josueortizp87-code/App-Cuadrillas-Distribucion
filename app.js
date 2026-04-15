@@ -1,83 +1,67 @@
-// --- VARIABLES GLOBALES ---
-var map, marcador;
-var prioridadSeleccionada = "MEDIA";
+let personaCount = 0;
 
-// --- NAVEGACIÓN ---
-function mostrarSubmenu(tipo) {
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('form-inspeccion-container').style.display = 'none';
+// NAVEGACIÓN
+function mostrarSubmenu() {
+    ocultarTodo();
     document.getElementById('submenu-mantenimiento').style.display = 'block';
-
-    // Asegura que la pantalla suba al inicio
-    window.scrollTo(0, 0);
-}
-
-function volverAlDashboard() {
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('submenu-mantenimiento').style.display = 'none';
-    document.getElementById('form-inspeccion-container').style.display = 'none';
-
-    window.scrollTo(0, 0);
+    window.scrollTo(0,0);
 }
 
 function mostrarFormulario(tipo) {
+    ocultarTodo();
     if(tipo === 'inspeccion') {
-        document.getElementById('submenu-mantenimiento').style.display = 'none';
         document.getElementById('form-inspeccion-container').style.display = 'block';
-
-        // 1. Generar ID Automático
-        document.getElementById('id-insp').value = "INSP-" + Math.floor(Math.random() * 1000000);
-
-        // 2. Inicializar Mapa y forzar re-dibujado
-        initMapa();
-
-        // 3. Subir al inicio del formulario
-        window.scrollTo(0, 0);
+        document.getElementById('id-insp').value = "INSP-" + Math.floor(Math.random()*9999);
+    } else if(tipo === 'poda') {
+        document.getElementById('form-poda-container').style.display = 'block';
+        if(personaCount === 0) agregarPersona();
     }
+    window.scrollTo(0,0);
 }
 
-// --- MAPA ---
-function initMapa() {
-    // Si el mapa no existe, lo creamos
-    if (!map) {
-        map = L.map('map').setView([14.65, -86.21], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        marcador = L.marker([14.65, -86.21], {draggable: true}).addTo(map);
-
-        marcador.on('dragend', function() {
-            let p = marcador.getLatLng();
-            document.getElementById('txt-coords').innerText = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
-        });
-
-        // Obtener GPS real
-        navigator.geolocation.getCurrentPosition(pos => {
-            let p = [pos.coords.latitude, pos.coords.longitude];
-            map.setView(p, 18);
-            marcador.setLatLng(p);
-            document.getElementById('txt-coords').innerText = p[0].toFixed(6) + ", " + p[1].toFixed(6);
-        });
-    } else {
-        // Si el mapa ya existe, forzamos que se ajuste al tamaño del contenedor
-        // Esto evita que el mapa se vea gris al abrir el formulario
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 200);
-    }
+function volverAlDashboard() {
+    ocultarTodo();
+    document.getElementById('dashboard').style.display = 'block';
+    window.scrollTo(0,0);
 }
 
-// --- LÓGICA DE BOTONES ---
-function seleccionar(btn, valor) {
-    let parent = btn.parentElement;
-    parent.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    prioridadSeleccionada = valor;
+function ocultarTodo() {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('submenu-mantenimiento').style.display = 'none';
+    document.getElementById('form-inspeccion-container').style.display = 'none';
+    document.getElementById('form-poda-container').style.display = 'none';
 }
 
-function finalizarInspeccion() {
-    // Aquí puedes agregar la lógica para enviar a una base de datos
-    alert("Inspección " + document.getElementById('id-insp').value + " Guardada Correctamente");
+// LÓGICA DE PERSONAS
+function agregarPersona() {
+    personaCount++;
+    const lista = document.getElementById('lista-personal');
+    const div = document.createElement('div');
+    div.className = 'persona-row';
+    div.innerHTML = `
+        <input type="text" placeholder="Nombre" id="p-nom-${personaCount}">
+        <div class="grid-2">
+            <input type="text" placeholder="Identidad" id="p-id-${personaCount}">
+            <input type="number" placeholder="Pago L." id="p-pago-${personaCount}">
+        </div>
+    `;
+    lista.appendChild(div);
+}
 
-    // Limpiar el formulario y volver
-    document.getElementById('form-detalle').reset();
-    volverAlDashboard();
+// GENERACIÓN DE PDF (Estructura base)
+function generarPDFPoda() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Aquí el bot llenará la plantilla con los logos y datos
+    const zona = document.getElementById('zona-poda').value;
+
+    doc.setFontSize(16);
+    doc.text("INFORME DE PODA COMUNITARIA", 10, 20);
+    doc.setFontSize(12);
+    doc.text("Zona: " + zona, 10, 30);
+    doc.text("Generado por: Ing. Josué Ortiz", 10, 40);
+
+    alert("El PDF se ha generado. En la siguiente fase conectaremos las fotos y el logo UTCD.");
+    doc.save("Informe_Poda.pdf");
 }
