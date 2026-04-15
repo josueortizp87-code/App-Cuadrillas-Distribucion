@@ -1,5 +1,5 @@
 var mapI, mapP, markerI, markerP;
-var gpsIni = "No definido", gpsFin = "No definido";
+var gpsIni = "No marcado", gpsFin = "No marcado";
 
 function mostrarSubmenu() {
     ocultarTodo();
@@ -11,10 +11,10 @@ function mostrarFormulario(tipo) {
     if(tipo === 'inspeccion') {
         document.getElementById('form-inspeccion-container').style.display = 'block';
         document.getElementById('id-insp').value = "INSP-" + Math.floor(Math.random()*999999);
-        initMap('map-insp', 'markerI');
+        initMapInsp();
     } else if(tipo === 'poda') {
         document.getElementById('form-poda-container').style.display = 'block';
-        initMap('map-poda', 'markerP');
+        initMapPoda();
     }
     window.scrollTo(0,0);
 }
@@ -25,17 +25,25 @@ function volverAlDashboard() {
 }
 
 function ocultarTodo() {
-    ['dashboard','submenu-mantenimiento','form-inspeccion-container','form-poda-container'].forEach(id => {
-        if(document.getElementById(id)) document.getElementById(id).style.display = 'none';
-    });
+    const ids = ['dashboard','submenu-mantenimiento','form-inspeccion-container','form-poda-container'];
+    ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 }
 
-function initMap(mapId, markerVar) {
-    let m = L.map(mapId).setView([14.65, -86.21], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
-    let marker = L.marker([14.65, -86.21], {draggable: true}).addTo(m);
-    if(markerVar === 'markerI') markerI = marker; else markerP = marker;
-    setTimeout(() => m.invalidateSize(), 200);
+// --- MAPAS INDEPENDIENTES ---
+function initMapInsp() {
+    if (mapI) mapI.remove();
+    mapI = L.map('map-insp').setView([14.65, -86.21], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapI);
+    markerI = L.marker([14.65, -86.21], {draggable: true}).addTo(mapI);
+    setTimeout(() => mapI.invalidateSize(), 300);
+}
+
+function initMapPoda() {
+    if (mapP) mapP.remove();
+    mapP = L.map('map-poda').setView([14.65, -86.21], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapP);
+    markerP = L.marker([14.65, -86.21], {draggable: true}).addTo(mapP);
+    setTimeout(() => mapP.invalidateSize(), 300);
 }
 
 function marcarGPS(tipo) {
@@ -45,6 +53,7 @@ function marcarGPS(tipo) {
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
+// --- GENERACIÓN PDF (Fotos Grandes y Datos Completos) ---
 async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -65,32 +74,32 @@ async function generarPDFPoda() {
         });
     };
 
-    // --- PÁGINA 1: DATOS COMPLETOS ---
+    // PÁGINA 1: DATOS TÉCNICOS Y ADMINISTRATIVOS
     dibujarMarco();
     doc.setFontSize(14);
     doc.text("INFORME DE PODA COMUNITARIA SECTOR: JUTICALPA", 15, 20);
     doc.setFontSize(9);
-    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 15, 30);
-    doc.text(`ZONA DE TRABAJO: ${document.getElementById('poda-zona').value}`, 15, 35);
-    doc.text(`FECHA: ${document.getElementById('poda-fecha').value}`, 15, 40);
-    doc.text(`HORA INICIO: ${document.getElementById('h-ini').value}  HORA FINAL: ${document.getElementById('h-fin').value}`, 15, 45);
-    doc.text(`GPS INICIAL: ${gpsIni}; GPS FINAL: ${gpsFin}`, 15, 50);
-    doc.text(`MÉTRICAS: Brecha ${document.getElementById('m-brecha').value}; Poda ${document.getElementById('m-poda').value}; Postes ${document.getElementById('m-postes').value}`, 15, 55);
-    doc.text(`PERSONAS CONTRATADAS: ${document.getElementById('poda-personas').value}`, 15, 60);
-    doc.text(`PAGO MO: L${document.getElementById('pago-mo').value}; PAGO TRANS: L${document.getElementById('pago-trans').value}`, 15, 65);
-    doc.text(`RESPONSABLE SUP: ${document.getElementById('resp-super').value}`, 15, 70);
-    doc.text(`RESPONSABLE ACT: ${document.getElementById('resp-activ').value}`, 15, 75);
+    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 15, 28);
+    doc.text(`ZONA DE TRABAJO: ${document.getElementById('poda-zona').value}`, 15, 33);
+    doc.text(`FECHA: ${document.getElementById('poda-fecha').value}`, 15, 38);
+    doc.text(`HORA INICIO: ${document.getElementById('h-ini').value}  HORA FINAL: ${document.getElementById('h-fin').value}`, 15, 43);
+    doc.text(`GPS INICIAL: ${gpsIni}; GPS FINAL: ${gpsFin}`, 15, 48);
+    doc.text(`MÉTRICAS: Brecha ${document.getElementById('m-brecha').value}m; Poda ${document.getElementById('m-poda').value}m; Postes ${document.getElementById('m-postes').value}`, 15, 53);
+    doc.text(`PERSONAS CONTRATADAS: ${document.getElementById('poda-personas').value}`, 15, 58);
+    doc.text(`PAGO MO: L${document.getElementById('pago-mo').value}; PAGO TRANSPORTE: L${document.getElementById('pago-trans').value}`, 15, 63);
+    doc.text(`RESPONSABLE SUPERVISION: ${document.getElementById('resp-super').value}`, 15, 68);
+    doc.text(`RESPONSABLE ACTIVIDADES: ${document.getElementById('resp-activ').value}`, 15, 73);
 
     const fGrupo = await leerFoto('f-grupo');
     if(fGrupo) {
-        doc.text("EVIDENCIA GRUPAL:", 15, 85);
-        doc.addImage(fGrupo, 'JPEG', 10, 90, 190, 120);
-        doc.rect(10, 90, 190, 120);
+        doc.text("EVIDENCIA GRUPAL:", 15, 83);
+        doc.addImage(fGrupo, 'JPEG', 10, 88, 190, 120);
+        doc.rect(10, 88, 190, 120);
     }
 
-    // --- PÁGINA 2 Y 3: IDENTIDADES (PÁGINA COMPLETA) ---
-    const paginasID = [{id:'f-id-f', t:'ID FRENTE'}, {id:'f-id-r', t:'ID REVÉS'}];
-    for(let p of paginasID){
+    // PÁGINAS 2 Y 3: IDENTIDADES (TAMAÑO HOJA COMPLETA)
+    const ids = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
+    for(let p of ids){
         doc.addPage(); dibujarMarco();
         const img = await leerFoto(p.id);
         if(img) {
@@ -100,7 +109,7 @@ async function generarPDFPoda() {
         }
     }
 
-    // --- PÁGINA 4: 9 FOTOS (TAMAÑO MAXIMIZADO) ---
+    // PÁGINA 4: 9 FOTOS (TAMAÑO MAXIMIZADO)
     doc.addPage(); dibujarMarco();
     const secciones = [
         { t: "FOTOS ANTES", ids: ['f-ini-1', 'f-ini-2', 'f-ini-3'] },
@@ -124,14 +133,14 @@ async function generarPDFPoda() {
         y += 85;
     }
 
-    // --- PÁGINA 5: RECIBO ---
+    // PÁGINA 5: RECIBO (TAMAÑO HOJA COMPLETA)
     doc.addPage(); dibujarMarco();
     const rec = await leerFoto('f-recibo');
     if(rec){
-        doc.text("RECIBO DE CAJA", 15, 15);
+        doc.text("RECIBO DE CAJA FINAL", 15, 15);
         doc.addImage(rec, 'JPEG', 10, 20, 190, 260);
         doc.rect(10, 20, 190, 260);
     }
 
-    doc.save("Informe_Poda_Final.pdf");
+    doc.save(`Poda_${document.getElementById('poda-zona').value || 'Informe'}.pdf`);
 }
