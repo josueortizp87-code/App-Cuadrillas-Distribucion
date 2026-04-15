@@ -65,73 +65,73 @@ async function generarPDFPoda() {
         });
     };
 
-    // --- PÁGINA 1: DATOS Y GRUPO ---
+    // --- PÁGINA 1: DATOS COMPLETOS ---
     dibujarMarco();
     doc.setFontSize(14);
     doc.text("INFORME DE PODA COMUNITARIA SECTOR: JUTICALPA", 15, 20);
-    doc.setFontSize(10);
-    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value} | ZONA: ${document.getElementById('poda-zona').value}`, 15, 28);
-    doc.text(`FECHA: ${document.getElementById('poda-fecha').value} | GPS: ${gpsIni} / ${gpsFin}`, 15, 34);
-    doc.text(`MÉTRICAS: Brecha ${document.getElementById('m-brecha').value}m | Poda ${document.getElementById('m-poda').value}m | Postes ${document.getElementById('m-postes').value}`, 15, 40);
-    doc.text(`PAGOS: MO L${document.getElementById('pago-mo').value} | Trans L${document.getElementById('pago-trans').value} | Personas: ${document.getElementById('poda-personas').value}`, 15, 46);
+    doc.setFontSize(9);
+    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 15, 30);
+    doc.text(`ZONA DE TRABAJO: ${document.getElementById('poda-zona').value}`, 15, 35);
+    doc.text(`FECHA: ${document.getElementById('poda-fecha').value}`, 15, 40);
+    doc.text(`HORA INICIO: ${document.getElementById('h-ini').value}  HORA FINAL: ${document.getElementById('h-fin').value}`, 15, 45);
+    doc.text(`GPS INICIAL: ${gpsIni}; GPS FINAL: ${gpsFin}`, 15, 50);
+    doc.text(`MÉTRICAS: Brecha ${document.getElementById('m-brecha').value}; Poda ${document.getElementById('m-poda').value}; Postes ${document.getElementById('m-postes').value}`, 15, 55);
+    doc.text(`PERSONAS CONTRATADAS: ${document.getElementById('poda-personas').value}`, 15, 60);
+    doc.text(`PAGO MO: L${document.getElementById('pago-mo').value}; PAGO TRANS: L${document.getElementById('pago-trans').value}`, 15, 65);
+    doc.text(`RESPONSABLE SUP: ${document.getElementById('resp-super').value}`, 15, 70);
+    doc.text(`RESPONSABLE ACT: ${document.getElementById('resp-activ').value}`, 15, 75);
 
     const fGrupo = await leerFoto('f-grupo');
     if(fGrupo) {
-        doc.text("EVIDENCIA GRUPAL:", 15, 56);
-        // Foto más grande en la primera página
-        doc.addImage(fGrupo, 'JPEG', 10, 60, 190, 130);
-        doc.rect(10, 60, 190, 130);
+        doc.text("EVIDENCIA GRUPAL:", 15, 85);
+        doc.addImage(fGrupo, 'JPEG', 10, 90, 190, 120);
+        doc.rect(10, 90, 190, 120);
     }
 
-    // --- PÁGINA 2 Y 3: IDENTIDADES (AJUSTE A TODA LA HOJA) ---
-    const idsPaginas = [{id: 'f-id-f', tit: 'IDENTIDAD FRENTE'}, {id: 'f-id-r', tit: 'IDENTIDAD REVÉS'}];
-    for (let p of idsPaginas) {
+    // --- PÁGINA 2 Y 3: IDENTIDADES (PÁGINA COMPLETA) ---
+    const paginasID = [{id:'f-id-f', t:'ID FRENTE'}, {id:'f-id-r', t:'ID REVÉS'}];
+    for(let p of paginasID){
         doc.addPage(); dibujarMarco();
         const img = await leerFoto(p.id);
         if(img) {
-            doc.text(p.tit, 15, 15);
-            doc.addImage(img, 'JPEG', 10, 20, 190, 260); // Cubre casi toda la hoja
+            doc.text(p.t, 15, 15);
+            doc.addImage(img, 'JPEG', 10, 20, 190, 260);
             doc.rect(10, 20, 190, 260);
         }
     }
 
-    // --- PÁGINA 4: 9 FOTOS (MÁXIMO APROVECHAMIENTO) ---
+    // --- PÁGINA 4: 9 FOTOS (TAMAÑO MAXIMIZADO) ---
     doc.addPage(); dibujarMarco();
     const secciones = [
-        { titulo: "FOTOS ANTES", ids: ['f-ini-1', 'f-ini-2', 'f-ini-3'] },
-        { titulo: "FOTOS DURANTE", ids: ['f-eje-1', 'f-eje-2', 'f-eje-3'] },
-        { titulo: "FOTOS DESPUÉS", ids: ['f-fin-1', 'f-fin-2', 'f-fin-3'] }
+        { t: "FOTOS ANTES", ids: ['f-ini-1', 'f-ini-2', 'f-ini-3'] },
+        { t: "FOTOS DURANTE", ids: ['f-eje-1', 'f-eje-2', 'f-eje-3'] },
+        { t: "FOTOS DESPUÉS", ids: ['f-fin-1', 'f-fin-2', 'f-fin-3'] }
     ];
-
-    let yPos = 15;
-    const fotoAncho = 62;
-    const fotoAlto = 78; // Aumentado para cubrir más espacio vertical
-
-    for (let s of secciones) {
-        doc.setFontSize(12);
-        doc.text(s.titulo, 15, yPos);
-        yPos += 5;
-
-        let xPos = 10;
-        for (let id of s.ids) {
+    let y = 15;
+    for(let s of secciones){
+        doc.setFontSize(11);
+        doc.text(s.t, 15, y);
+        y += 5;
+        let x = 10;
+        for(let id of s.ids){
             const img = await leerFoto(id);
-            if (img) {
-                doc.addImage(img, 'JPEG', xPos, yPos, fotoAncho, fotoAlto);
-                doc.rect(xPos, yPos, fotoAncho, fotoAlto);
+            if(img){
+                doc.addImage(img, 'JPEG', x, y, 62, 78);
+                doc.rect(x, y, 62, 78);
             }
-            xPos += 64;
+            x += 64;
         }
-        yPos += fotoAlto + 10; // Espacio para la siguiente sección
+        y += 85;
     }
 
-    // --- PÁGINA 5: RECIBO (AJUSTE A TODA LA HOJA) ---
+    // --- PÁGINA 5: RECIBO ---
     doc.addPage(); dibujarMarco();
-    const recibo = await leerFoto('f-recibo');
-    if(recibo) {
-        doc.text("RECIBO DE CAJA FINAL", 15, 15);
-        doc.addImage(recibo, 'JPEG', 10, 20, 190, 260);
+    const rec = await leerFoto('f-recibo');
+    if(rec){
+        doc.text("RECIBO DE CAJA", 15, 15);
+        doc.addImage(rec, 'JPEG', 10, 20, 190, 260);
         doc.rect(10, 20, 190, 260);
     }
 
-    doc.save(`Informe_Poda_${document.getElementById('poda-zona').value}.pdf`);
+    doc.save("Informe_Poda_Final.pdf");
 }
