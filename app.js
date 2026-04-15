@@ -7,11 +7,17 @@ function mostrarSubmenu(tipo) {
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('form-inspeccion-container').style.display = 'none';
     document.getElementById('submenu-mantenimiento').style.display = 'block';
+
+    // Asegura que la pantalla suba al inicio
+    window.scrollTo(0, 0);
 }
 
 function volverAlDashboard() {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('submenu-mantenimiento').style.display = 'none';
+    document.getElementById('form-inspeccion-container').style.display = 'none';
+
+    window.scrollTo(0, 0);
 }
 
 function mostrarFormulario(tipo) {
@@ -22,13 +28,17 @@ function mostrarFormulario(tipo) {
         // 1. Generar ID Automático
         document.getElementById('id-insp').value = "INSP-" + Math.floor(Math.random() * 1000000);
 
-        // 2. Inicializar Mapa si no existe
+        // 2. Inicializar Mapa y forzar re-dibujado
         initMapa();
+
+        // 3. Subir al inicio del formulario
+        window.scrollTo(0, 0);
     }
 }
 
 // --- MAPA ---
 function initMapa() {
+    // Si el mapa no existe, lo creamos
     if (!map) {
         map = L.map('map').setView([14.65, -86.21], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -39,13 +49,19 @@ function initMapa() {
             document.getElementById('txt-coords').innerText = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
         });
 
-        // Intentar obtener GPS real automáticamente
+        // Obtener GPS real
         navigator.geolocation.getCurrentPosition(pos => {
             let p = [pos.coords.latitude, pos.coords.longitude];
             map.setView(p, 18);
             marcador.setLatLng(p);
             document.getElementById('txt-coords').innerText = p[0].toFixed(6) + ", " + p[1].toFixed(6);
         });
+    } else {
+        // Si el mapa ya existe, forzamos que se ajuste al tamaño del contenedor
+        // Esto evita que el mapa se vea gris al abrir el formulario
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 200);
     }
 }
 
@@ -58,6 +74,10 @@ function seleccionar(btn, valor) {
 }
 
 function finalizarInspeccion() {
+    // Aquí puedes agregar la lógica para enviar a una base de datos
     alert("Inspección " + document.getElementById('id-insp').value + " Guardada Correctamente");
+
+    // Limpiar el formulario y volver
+    document.getElementById('form-detalle').reset();
     volverAlDashboard();
 }

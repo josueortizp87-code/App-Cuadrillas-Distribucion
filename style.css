@@ -1,29 +1,94 @@
-/* Estilos para entradas de datos */
-input[type="text"], input[type="date"], input[type="number"], select, textarea {
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --accent: #f1c40f; /* Amarillo ENEE */
+    --text: #ffffff;
+    --text-dim: #b3b3b3;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text);
+    margin: 0;
+    padding-bottom: 50px;
+}
+
+.container { padding: 20px; max-width: 500px; margin: auto; }
+
+/* Encabezados Estilo App */
+header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 1px solid #333; }
+header h1 { font-size: 1.2rem; color: var(--accent); margin: 5px 0; letter-spacing: 1px; }
+header p { font-size: 0.8rem; color: var(--text-dim); margin: 0; }
+
+/* Tarjetas Profesionales (Grid) */
+.grid-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 25px 15px;
+    text-align: center;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #333;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.card:active { transform: scale(0.95); background: #252525; }
+.card i { font-size: 2.2rem; color: var(--accent); display: block; margin-bottom: 12px; }
+.card span { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+
+/* Estilo de Formulario Pro */
+label {
+    display: block;
+    margin-top: 18px;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+input, select, textarea {
     width: 100%;
-    padding: 12px;
-    background: #2d2d2e;
-    border: 1px solid #444;
+    padding: 14px;
+    background: #252525;
+    border: 1px solid #333;
     color: white;
     border-radius: 8px;
-    margin-top: 5px;
-    font-size: 1rem;
+    margin-top: 6px;
+    box-sizing: border-box;
 }
 
-.input-readonly {
-    background: #1a1a1b !important;
-    color: var(--accent) !important;
-    font-weight: bold;
-    border: none !important;
-}
+input:focus { border-color: var(--accent); outline: none; }
 
-/* Selector de Prioridad */
-.selector-botones { display: flex; gap: 10px; margin-top: 5px; }
+/* Botones de Estado y Prioridad */
+.selector-botones { display: flex; gap: 8px; margin-top: 8px; }
 .selector-botones button {
-    flex: 1; padding: 10px; border: 1px solid var(--accent);
-    background: transparent; color: white; border-radius: 8px; cursor: pointer;
+    flex: 1; padding: 12px; border: 1px solid #444;
+    background: #1e1e1e; color: white; border-radius: 8px; font-size: 0.7rem; font-weight: bold;
 }
-.selector-botones button.active { background: var(--accent); color: black; font-weight: bold; }
+.selector-botones button.active {
+    background: var(--accent);
+    color: black;
+    border-color: var(--accent);
+}
 
-.foto-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
-.coords-display { font-size: 0.8rem; color: var(--accent); margin-top: 5px; text-align: center; }
+/* Botón Regresar y Enviar */
+.btn-regresar { background: none; border: none; color: var(--accent); font-weight: bold; padding: 10px 0; cursor: pointer; }
+.btn-enviar {
+    background: var(--accent);
+    color: black;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: 25px;
+    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2);
+}

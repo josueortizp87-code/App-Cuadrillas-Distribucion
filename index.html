@@ -25,19 +25,25 @@
     </div>
 
     <div id="submenu-mantenimiento" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <h2>MANTENIMIENTO</h2>
-        <div class="grid-menu">
-            <div class="card" onclick="mostrarFormulario('inspeccion')">
-                <i class="fas fa-search"></i>
-                <span>Inspección</span>
-            </div>
-            <div class="card" onclick="mostrarFormulario('poda')">
-                <i class="fas fa-leaf"></i>
-                <span>Poda Comunitaria</span>
-            </div>
+    <button class="btn-regresar" onclick="volverAlDashboard()">
+        <i class="fas fa-chevron-left"></i> VOLVER AL INICIO
+    </button>
+    <header>
+        <h1>MANTENIMIENTO</h1>
+        <p>Seleccione tipo de actividad</p>
+    </header>
+
+    <div class="grid-menu">
+        <div class="card" onclick="mostrarFormulario('inspeccion')">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Inspección</span>
+        </div>
+        <div class="card" onclick="mostrarFormulario('poda')">
+            <i class="fas fa-leaf"></i>
+            <span>Poda</span>
         </div>
     </div>
+</div>
 
     <div id="form-inspeccion-container" class="container" style="display:none;">
         <button class="btn-regresar" onclick="mostrarSubmenu('mantenimiento')"><i class="fas fa-arrow-left"></i> Volver</button>
