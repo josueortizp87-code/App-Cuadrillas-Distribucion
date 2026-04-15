@@ -17,11 +17,9 @@
             <h1>SECTOR JUTICALPA</h1>
             <p>Ing. Josué Ortiz - UTCD</p>
         </header>
-        <div class="grid-menu">
-            <div class="card" onclick="mostrarSubmenu()">
-                <i class="fas fa-tools"></i>
-                <span>Mantenimiento</span>
-            </div>
+        <div class="card" onclick="mostrarSubmenu()">
+            <i class="fas fa-tools"></i>
+            <span>Mantenimiento</span>
         </div>
     </div>
 
@@ -51,15 +49,10 @@
                 <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
                 <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
             </select>
-            <label>Nombre:</label>
+            <label>Nombre de la Inspección:</label>
             <input type="text" id="nombre-insp">
-            <label>Tipo:</label>
-            <select id="tipo-insp">
-                <option>DESPEJE</option><option>CAMARA ACÚSTICA</option><option>PROYECTO</option><option>MEJORA DE RED</option>
-            </select>
-            <label>Ubicación:</label>
-            <div id="map-insp" style="height: 200px; border-radius: 8px;"></div>
-            <button type="button" class="btn-enviar" onclick="alert('Guardado')">GUARDAR</button>
+            <div id="map-insp" style="height: 200px; border-radius: 8px; margin-top:10px;"></div>
+            <button type="button" class="btn-enviar" onclick="alert('Guardado')">GUARDAR INSPECCIÓN</button>
         </form>
     </div>
 
@@ -73,62 +66,64 @@
                 <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
                 <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
             </select>
-
-            <label>Zona de Trabajo (Escribir):</label>
-            <input type="text" id="poda-zona" placeholder="Ej: Troncal RS CULMI">
+            <label>Zona de Trabajo:</label>
+            <input type="text" id="poda-zona">
+            <label>Fecha del Trabajo:</label>
+            <input type="date" id="poda-fecha">
 
             <div class="grid-2">
-                <div><label>Inicio:</label><input type="time" id="h-ini"></div>
-                <div><label>Final:</label><input type="time" id="h-fin"></div>
+                <div><label>Hora Inicio:</label><input type="time" id="h-ini"></div>
+                <div><label>Hora Final:</label><input type="time" id="h-fin"></div>
             </div>
 
-            <label>Métricas:</label>
+            <label>Métricas Técnicas:</label>
             <div class="grid-3">
-                <input type="number" id="m-brecha" placeholder="Brecha">
-                <input type="number" id="m-poda" placeholder="Poda">
-                <input type="number" id="m-postes" placeholder="Postes">
+                <input type="number" id="m-brecha" placeholder="M. Brecha">
+                <input type="number" id="m-poda" placeholder="M. Poda">
+                <input type="number" id="m-postes" placeholder="Postes R.">
             </div>
 
-            <label>Personal e Identidades:</label>
-            <div class="grid-3">
-                <div class="foto-box"><span>GRUPO</span><input type="file" accept="image/*" capture="camera" id="f-grupo"></div>
-                <div class="foto-box"><span>ID FRENTE</span><input type="file" accept="image/*" capture="camera" id="f-id-f"></div>
-                <div class="foto-box"><span>ID REVÉS</span><input type="file" accept="image/*" capture="camera" id="f-id-r"></div>
+            <label>Personal y Liquidación:</label>
+            <input type="number" id="poda-personas" placeholder="Personas Contratadas">
+            <div class="grid-2">
+                <input type="number" id="pago-mo" placeholder="Mano de Obra (L.)">
+                <input type="number" id="pago-trans" placeholder="Transporte (L.)">
             </div>
 
-            <label>Fotos Inicio (3):</label>
+            <label>Responsables:</label>
+            <input type="text" id="resp-super" placeholder="Responsable Supervisión">
+            <input type="text" id="resp-activ" placeholder="Responsable Actividades">
+
+            <label>Fotos del Grupo e Identidades:</label>
             <div class="grid-3">
-                <input type="file" accept="image/*" id="f-ini-1">
-                <input type="file" accept="image/*" id="f-ini-2">
-                <input type="file" accept="image/*" id="f-ini-3">
+                <div class="foto-box"><span>GRUPO</span><input type="file" accept="image/*" id="f-grupo"></div>
+                <div class="foto-box"><span>ID FRENTE</span><input type="file" accept="image/*" id="f-id-f"></div>
+                <div class="foto-box"><span>ID REVÉS</span><input type="file" accept="image/*" id="f-id-r"></div>
             </div>
 
-            <label>Fotos Ejecución (3):</label>
+            <label>Fotos Campo (Inicio, Ejecución, Final):</label>
             <div class="grid-3">
-                <input type="file" accept="image/*" id="f-eje-1">
-                <input type="file" accept="image/*" id="f-eje-2">
-                <input type="file" accept="image/*" id="f-eje-3">
+                <input type="file" accept="image/*" id="f-ini-1"><input type="file" accept="image/*" id="f-ini-2"><input type="file" accept="image/*" id="f-ini-3">
             </div>
-
-            <label>Fotos Final (3):</label>
             <div class="grid-3">
-                <input type="file" accept="image/*" id="f-fin-1">
-                <input type="file" accept="image/*" id="f-fin-2">
-                <input type="file" accept="image/*" id="f-fin-3">
+                <input type="file" accept="image/*" id="f-eje-1"><input type="file" accept="image/*" id="f-eje-2"><input type="file" accept="image/*" id="f-eje-3">
+            </div>
+            <div class="grid-3">
+                <input type="file" accept="image/*" id="f-fin-1"><input type="file" accept="image/*" id="f-fin-2"><input type="file" accept="image/*" id="f-fin-3">
             </div>
 
             <label>Recibo de Caja:</label>
             <input type="file" accept="image/*" id="f-recibo">
 
             <label>Ubicación GPS:</label>
-            <div id="map-poda" style="height: 200px; border-radius: 8px;"></div>
+            <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
             <div class="grid-2">
-                <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">GPS INICIO</button>
-                <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">GPS FINAL</button>
+                <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">FIJAR INICIO</button>
+                <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">FIJAR FINAL</button>
             </div>
-            <p class="coords-text" id="coords-display">Inicio: 0,0 | Fin: 0,0</p>
+            <p class="coords-text" id="coords-display">GPS: Pendiente</p>
 
-            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME (5 PAGS)</button>
+            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME DE LIQUIDACIÓN</button>
         </form>
     </div>
 
