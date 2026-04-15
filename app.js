@@ -1,6 +1,7 @@
 var mapI, mapP, markerI, markerP;
-var gpsIni = "", gpsFin = "";
+var gpsIni = "No marcado", gpsFin = "No marcado";
 
+// --- NAVEGACIÓN (Se mantiene igual) ---
 function mostrarSubmenu() {
     ocultarTodo();
     document.getElementById('submenu-mantenimiento').style.display = 'block';
@@ -28,9 +29,10 @@ function volverAlDashboard() {
 
 function ocultarTodo() {
     const ids = ['dashboard', 'submenu-mantenimiento', 'form-inspeccion-container', 'form-poda-container'];
-    ids.forEach(id => document.getElementById(id).style.display = 'none');
+    ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 }
 
+// --- MAPAS ---
 function initMapInsp() {
     if (!mapI) {
         mapI = L.map('map-insp').setView([14.65, -86.21], 15);
@@ -64,17 +66,69 @@ function marcarGPS(tipo) {
     }
 }
 
-function generarPDFPoda() {
+// --- GENERACIÓN DE PDF PROFESIONAL ---
+async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text("INFORME DE PODA COMUNITARIA - UTCD JUTICALPA", 10, 20);
-    doc.setFontSize(10);
-    doc.text("Zona: " + document.getElementById('zona-poda').value, 10, 35);
-    doc.text("GPS Inicio: " + gpsIni, 10, 45);
-    doc.text("GPS Final: " + gpsFin, 10, 55);
-    doc.text("Brecha: " + document.getElementById('brecha').value + "m", 10, 65);
+    const margin = 15;
+    let y = 25;
 
-    alert("Informe generado. Se han incluido los campos para las 13 fotos reglamentarias y GPS.");
-    doc.save("Informe_Poda_UTCD.pdf");
+    // Título y Datos Básicos
+    doc.setFontSize(16);
+    doc.setTextColor(40);
+    doc.text("INFORME DE PODA COMUNITARIA - UTCD", margin, y);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    y += 10;
+    doc.text(`SECTOR: JUTICALPA | ZONA: ${document.getElementById('zona-poda').value}`, margin, y);
+    y += 7;
+    doc.text(`GPS INICIO: ${gpsIni} | GPS FINAL: ${gpsFin}`, margin, y);
+    y += 7;
+    doc.text(`MÉTRICAS: Brecha: ${document.getElementById('brecha').value}m | Poda: ${document.getElementById('poda-m').value}m | Postes: ${document.getElementById('postes').value}`, margin, y);
+
+    // Función para procesar y añadir imágenes al PDF
+    const agregarImagenAlPDF = async (inputId, titulo, nuevaPagina = false) => {
+        const file = document.getElementById(inputId).files[0];
+        if (file) {
+            if (nuevaPagina) doc.addPage();
+            const imgData = await readFileAsDataURL(file);
+            doc.setFontSize(12);
+            doc.text(titulo, margin, 20);
+            // Ajuste de imagen (Ancho, Alto)
+            doc.addImage(imgData, 'JPEG', margin, 30, 180, 120);
+        }
+    };
+
+    // Helper para leer archivo
+    function readFileAsDataURL(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // LISTADO DE FOTOS A PROCESAR (Se generan páginas según se necesite)
+    // 1. Documentación Personal
+    await agregarImagenAlPDF('f-grupo', "EVIDENCIA: GRUPO DE TRABAJO", true);
+    await agregarImagenAlPDF('f-id-f', "DOCUMENTO: IDENTIDAD (FRENTE)", true);
+    await agregarImagenAlPDF('f-id-r', "DOCUMENTO: IDENTIDAD (REVERSO)", true);
+
+    // 2. Momentos (Aquí puedes expandir a las 3 de cada uno)
+    await agregarImagenAlPDF('f-ini-1', "MOMENTO: INICIO (FOTO 1)", true);
+    await agregarImagenAlPDF('f-ini-2', "MOMENTO: INICIO (FOTO 2)", true);
+    await agregarImagenAlPDF('f-ini-3', "MOMENTO: INICIO (FOTO 3)", true);
+
+    await agregarImagenAlPDF('f-eje-1', "MOMENTO: EJECUCIÓN (FOTO 1)", true);
+    await agregarImagenAlPDF('f-eje-2', "MOMENTO: EJECUCIÓN (FOTO 2)", true);
+    await agregarImagenAlPDF('f-eje-3', "MOMENTO: EJECUCIÓN (FOTO 3)", true);
+
+    await agregarImagenAlPDF('f-fin-1', "MOMENTO: FINALIZACIÓN (FOTO 1)", true);
+    await agregarImagenAlPDF('f-fin-2', "MOMENTO: FINALIZACIÓN (FOTO 2)", true);
+    await agregarImagenAlPDF('f-fin-3', "MOMENTO: FINALIZACIÓN (FOTO 3)", true);
+
+    await agregarImagenAlPDF('f-recibo', "COMPROBANTE: RECIBO DE CAJA", true);
+
+    doc.save(`Informe_Poda_${new Date().toLocaleDateString()}.pdf`);
 }
