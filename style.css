@@ -3,16 +3,14 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
 .container { max-width: 500px; margin: auto; }
 header { text-align: center; padding: 10px 0; border-bottom: 1px solid #333; margin-bottom: 15px; }
 header h1 { font-size: 1.1rem; color: var(--accent); text-transform: uppercase; }
-.grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.card { background: var(--card); padding: 20px 10px; border-radius: 12px; text-align: center; border: 1px solid #333; cursor: pointer; }
+.card { background: var(--card); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #333; cursor: pointer; }
 .card i { font-size: 2rem; color: var(--accent); margin-bottom: 8px; display: block; }
 label { display: block; margin-top: 12px; color: var(--accent); font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-input, select { width: 100%; padding: 10px; background: #252525; border: 1px solid #333; color: white; border-radius: 6px; margin-top: 4px; box-sizing: border-box; font-size: 0.9rem; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+input, select { width: 100%; padding: 10px; background: #252525; border: 1px solid #333; color: white; border-radius: 6px; margin-top: 4px; box-sizing: border-box; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; }
-.btn-regresar { background: none; border: none; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+.btn-regresar { background: none; border: none; color: var(--accent); font-weight: bold; cursor: pointer; }
 .btn-enviar { background: var(--accent); color: black; width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
 .btn-secundario { background: #333; color: var(--accent); width: 100%; padding: 8px; border: 1px solid var(--accent); border-radius: 6px; margin-top: 8px; font-size: 0.65rem; cursor: pointer; }
-.foto-box { background: #1a1a1b; border: 1px dashed #444; padding: 4px; text-align: center; font-size: 8px; border-radius: 4px; }
-.coords-text { font-size: 9px; color: #aaa; margin-top: 4px; text-align: center; }
+.coords-text { font-size: 9px; color: #aaa; margin-top: 5px; text-align: center; }
 .input-readonly { background: #000; color: var(--accent); border: none; }
