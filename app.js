@@ -1,7 +1,7 @@
 var mapI, mapP, markerI, markerP;
-var gpsIni = "No marcado", gpsFin = "No marcado";
+var gpsIni = "0,0", gpsFin = "0,0";
 
-// --- NAVEGACIÓN (Se mantiene igual) ---
+// --- NAVEGACIÓN ---
 function mostrarSubmenu() {
     ocultarTodo();
     document.getElementById('submenu-mantenimiento').style.display = 'block';
@@ -13,10 +13,10 @@ function mostrarFormulario(tipo) {
     if(tipo === 'inspeccion') {
         document.getElementById('form-inspeccion-container').style.display = 'block';
         document.getElementById('id-insp').value = "INSP-" + Math.floor(Math.random()*999999);
-        initMapInsp();
+        initMap('map-insp', 'markerI');
     } else if(tipo === 'poda') {
         document.getElementById('form-poda-container').style.display = 'block';
-        initMapPoda();
+        initMap('map-poda', 'markerP');
     }
     window.scrollTo(0,0);
 }
@@ -24,111 +24,111 @@ function mostrarFormulario(tipo) {
 function volverAlDashboard() {
     ocultarTodo();
     document.getElementById('dashboard').style.display = 'block';
-    window.scrollTo(0,0);
 }
 
 function ocultarTodo() {
-    const ids = ['dashboard', 'submenu-mantenimiento', 'form-inspeccion-container', 'form-poda-container'];
-    ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
+    ['dashboard','submenu-mantenimiento','form-inspeccion-container','form-poda-container'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
 }
 
-// --- MAPAS ---
-function initMapInsp() {
-    if (!mapI) {
-        mapI = L.map('map-insp').setView([14.65, -86.21], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapI);
-        markerI = L.marker([14.65, -86.21], {draggable: true}).addTo(mapI);
-        markerI.on('dragend', () => {
-            let p = markerI.getLatLng();
-            document.getElementById('coords-val-insp').innerText = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
-        });
-    }
-}
-
-function initMapPoda() {
-    if (!mapP) {
-        mapP = L.map('map-poda').setView([14.65, -86.21], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapP);
-        markerP = L.marker([14.65, -86.21], {draggable: true}).addTo(mapP);
-        setTimeout(() => mapP.invalidateSize(), 200);
-    }
+// --- GPS ---
+function initMap(mapId, markerVar) {
+    let m = L.map(mapId).setView([14.65, -86.21], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+    let marker = L.marker([14.65, -86.21], {draggable: true}).addTo(m);
+    if(markerVar === 'markerI') markerI = marker; else markerP = marker;
+    setTimeout(() => m.invalidateSize(), 200);
 }
 
 function marcarGPS(tipo) {
     let p = markerP.getLatLng();
-    let coords = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
-    if(tipo === 'ini') {
-        gpsIni = coords;
-        document.getElementById('gps-ini').innerText = coords;
-    } else {
-        gpsFin = coords;
-        document.getElementById('gps-fin').innerText = coords;
-    }
+    let c = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
+    if(tipo === 'ini') gpsIni = c; else gpsFin = c;
+    document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
-// --- GENERACIÓN DE PDF PROFESIONAL ---
+// --- PDF DE 5 PÁGINAS ---
 async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const margin = 15;
-    let y = 25;
+    const margin = 10;
 
-    // Título y Datos Básicos
-    doc.setFontSize(16);
-    doc.setTextColor(40);
-    doc.text("INFORME DE PODA COMUNITARIA - UTCD", margin, y);
-
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    y += 10;
-    doc.text(`SECTOR: JUTICALPA | ZONA: ${document.getElementById('zona-poda').value}`, margin, y);
-    y += 7;
-    doc.text(`GPS INICIO: ${gpsIni} | GPS FINAL: ${gpsFin}`, margin, y);
-    y += 7;
-    doc.text(`MÉTRICAS: Brecha: ${document.getElementById('brecha').value}m | Poda: ${document.getElementById('poda-m').value}m | Postes: ${document.getElementById('postes').value}`, margin, y);
-
-    // Función para procesar y añadir imágenes al PDF
-    const agregarImagenAlPDF = async (inputId, titulo, nuevaPagina = false) => {
-        const file = document.getElementById(inputId).files[0];
-        if (file) {
-            if (nuevaPagina) doc.addPage();
-            const imgData = await readFileAsDataURL(file);
-            doc.setFontSize(12);
-            doc.text(titulo, margin, 20);
-            // Ajuste de imagen (Ancho, Alto)
-            doc.addImage(imgData, 'JPEG', margin, 30, 180, 120);
-        }
+    // Función para dibujar marco de página
+    const dibujarMarco = () => {
+        doc.setDrawColor(40);
+        doc.setLineWidth(0.5);
+        doc.rect(5, 5, 200, 287);
     };
 
-    // Helper para leer archivo
-    function readFileAsDataURL(file) {
-        return new Promise((resolve) => {
+    const leerFoto = (id) => {
+        const file = document.getElementById(id).files[0];
+        if (!file) return null;
+        return new Promise(resolve => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target.result);
             reader.readAsDataURL(file);
         });
+    };
+
+    // PÁGINA 1: DATOS Y FOTO GRUPAL
+    dibujarMarco();
+    doc.setFontSize(16);
+    doc.text("INFORME DE PODA COMUNITARIA - UTCD", 20, 20);
+    doc.setFontSize(10);
+    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 20, 30);
+    doc.text(`ZONA: ${document.getElementById('poda-zona').value}`, 20, 35);
+    doc.text(`GPS: ${gpsIni} / ${gpsFin}`, 20, 40);
+    doc.text(`MÉTRICAS: Brecha ${document.getElementById('m-brecha').value}m | Poda ${document.getElementById('m-poda').value}m`, 20, 45);
+
+    const fotoGrupo = await leerFoto('f-grupo');
+    if(fotoGrupo) {
+        doc.text("EVIDENCIA GRUPAL:", 20, 60);
+        doc.rect(19, 64, 172, 102); // Marco foto
+        doc.addImage(fotoGrupo, 'JPEG', 20, 65, 170, 100);
     }
 
-    // LISTADO DE FOTOS A PROCESAR (Se generan páginas según se necesite)
-    // 1. Documentación Personal
-    await agregarImagenAlPDF('f-grupo', "EVIDENCIA: GRUPO DE TRABAJO", true);
-    await agregarImagenAlPDF('f-id-f', "DOCUMENTO: IDENTIDAD (FRENTE)", true);
-    await agregarImagenAlPDF('f-id-r', "DOCUMENTO: IDENTIDAD (REVERSO)", true);
+    // PÁGINA 2: ID FRENTE
+    doc.addPage(); dibujarMarco();
+    const idF = await leerFoto('f-id-f');
+    if(idF) {
+        doc.text("IDENTIDADES - FRENTE:", 20, 20);
+        doc.rect(19, 29, 172, 112);
+        doc.addImage(idF, 'JPEG', 20, 30, 170, 110);
+    }
 
-    // 2. Momentos (Aquí puedes expandir a las 3 de cada uno)
-    await agregarImagenAlPDF('f-ini-1', "MOMENTO: INICIO (FOTO 1)", true);
-    await agregarImagenAlPDF('f-ini-2', "MOMENTO: INICIO (FOTO 2)", true);
-    await agregarImagenAlPDF('f-ini-3', "MOMENTO: INICIO (FOTO 3)", true);
+    // PÁGINA 3: ID REVÉS
+    doc.addPage(); dibujarMarco();
+    const idR = await leerFoto('f-id-r');
+    if(idR) {
+        doc.text("IDENTIDADES - REVÉS:", 20, 20);
+        doc.rect(19, 29, 172, 112);
+        doc.addImage(idR, 'JPEG', 20, 30, 170, 110);
+    }
 
-    await agregarImagenAlPDF('f-eje-1', "MOMENTO: EJECUCIÓN (FOTO 1)", true);
-    await agregarImagenAlPDF('f-eje-2', "MOMENTO: EJECUCIÓN (FOTO 2)", true);
-    await agregarImagenAlPDF('f-eje-3', "MOMENTO: EJECUCIÓN (FOTO 3)", true);
+    // PÁGINA 4: CUADRÍCULA DE 9 FOTOS (Inicio, Eje, Fin)
+    doc.addPage(); dibujarMarco();
+    doc.text("EVIDENCIA DE CAMPO (INICIO, EJECUCIÓN Y FINAL):", 20, 15);
+    const fotosCampo = ['f-ini-1','f-ini-2','f-ini-3','f-eje-1','f-eje-2','f-eje-3','f-fin-1','f-fin-2','f-fin-3'];
+    let x = 15, y = 20;
+    for(let i=0; i<fotosCampo.length; i++) {
+        const img = await leerFoto(fotosCampo[i]);
+        if(img) {
+            doc.rect(x-1, y-1, 57, 42); // Marco miniatura
+            doc.addImage(img, 'JPEG', x, y, 55, 40);
+        }
+        x += 60;
+        if((i+1)%3 === 0) { x = 15; y += 45; }
+    }
 
-    await agregarImagenAlPDF('f-fin-1', "MOMENTO: FINALIZACIÓN (FOTO 1)", true);
-    await agregarImagenAlPDF('f-fin-2', "MOMENTO: FINALIZACIÓN (FOTO 2)", true);
-    await agregarImagenAlPDF('f-fin-3', "MOMENTO: FINALIZACIÓN (FOTO 3)", true);
+    // PÁGINA 5: RECIBO
+    doc.addPage(); dibujarMarco();
+    const recibo = await leerFoto('f-recibo');
+    if(recibo) {
+        doc.text("RECIBO DE CAJA FINAL:", 20, 20);
+        doc.rect(19, 29, 172, 202);
+        doc.addImage(recibo, 'JPEG', 20, 30, 170, 200);
+    }
 
-    await agregarImagenAlPDF('f-recibo', "COMPROBANTE: RECIBO DE CAJA", true);
-
-    doc.save(`Informe_Poda_${new Date().toLocaleDateString()}.pdf`);
+    doc.save("Informe_Poda_UTCD_Final.pdf");
 }

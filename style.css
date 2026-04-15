@@ -2,17 +2,17 @@
 body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
 .container { max-width: 500px; margin: auto; }
 header { text-align: center; padding: 15px 0; border-bottom: 1px solid #333; margin-bottom: 20px; }
-header h1 { font-size: 1.2rem; color: var(--accent); margin: 5px 0; }
+header h1 { font-size: 1.2rem; color: var(--accent); }
 .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.card { background: var(--card); padding: 25px 10px; border-radius: 15px; text-align: center; border: 1px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.card { background: var(--card); padding: 25px 10px; border-radius: 15px; text-align: center; border: 1px solid #333; cursor: pointer; }
 .card i { font-size: 2.2rem; color: var(--accent); margin-bottom: 10px; display: block; }
-label { display: block; margin-top: 18px; color: var(--accent); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
-input, select, textarea { width: 100%; padding: 12px; background: #252525; border: 1px solid #333; color: white; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
+label { display: block; margin-top: 15px; color: var(--accent); font-size: 0.75rem; font-weight: bold; }
+input, select { width: 100%; padding: 12px; background: #252525; border: 1px solid #333; color: white; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
-.btn-regresar { background: none; border: none; color: var(--accent); font-weight: bold; cursor: pointer; padding: 10px 0; }
+.btn-regresar { background: none; border: none; color: var(--accent); font-weight: bold; cursor: pointer; }
 .btn-enviar { background: var(--accent); color: black; width: 100%; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 25px; cursor: pointer; }
-.btn-secundario { background: #333; color: var(--accent); width: 100%; padding: 12px; border: 1px solid var(--accent); border-radius: 8px; margin-top: 10px; font-size: 0.7rem; cursor: pointer; }
+.btn-secundario { background: #333; color: var(--accent); width: 100%; padding: 10px; border: 1px solid var(--accent); border-radius: 8px; margin-top: 10px; font-size: 0.7rem; cursor: pointer; }
 .foto-box { background: #1a1a1b; border: 1px dashed #444; padding: 5px; text-align: center; font-size: 9px; border-radius: 5px; }
 .coords-text { font-size: 10px; color: #aaa; margin-top: 5px; text-align: center; }
-.input-readonly { background: #000; color: var(--accent); border: none; font-weight: bold; }
+.input-readonly { background: #000; color: var(--accent); border: none; }
