@@ -13,9 +13,9 @@
 
     <div id="dashboard" class="container">
         <header>
-            <img src="https://logodownload.org/wp-content/uploads/2019/08/enee-logo.png" alt="Logo ENEE" style="height: 50px;">
-            <h1>SECTOR JUTICALPA</h1>
-            <p>Ing. Josué Ortiz - UTCD</p>
+            <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" alt="ENEE" style="height: 50px;">
+            <h1>SECTOR JUTICALPA - GESTIÓN DE LA RED</h1>
+            <p>Desarrollador - Josué Ortiz</p>
         </header>
         <div class="grid-menu">
             <div class="card" onclick="mostrarSubmenu()">
@@ -140,7 +140,7 @@
                 <div><label>Hora Inicio:</label><input type="time" id="h-ini"></div>
                 <div><label>Hora Final:</label><input type="time" id="h-fin"></div>
             </div>
-            <label>Métricas:</label>
+            <label>Trabajo ejecutado:</label>
             <div class="grid-3">
                 <input type="number" id="m-brecha" placeholder="Brecha">
                 <input type="number" id="m-poda" placeholder="Poda">
@@ -154,7 +154,7 @@
             </div>
             <label>Responsables:</label>
             <input type="text" id="resp-super" placeholder="Responsable Supervisión">
-            <input type="text" id="resp-activ" placeholder="Responsable Actividades">
+            <input type="text" id="resp-activ" placeholder="Responsable Actividades Contratista">
 
             <label>Fotos Grupo e Identidades:</label>
             <div class="grid-3">
@@ -163,11 +163,11 @@
                     <div id="p-f-grupo" class="preview-box"></div>
                 </div>
                 <div class="foto-input-group">
-                    <span>ID FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
+                    <span>DNI FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
                     <div id="p-f-idf" class="preview-box"></div>
                 </div>
                 <div class="foto-input-group">
-                    <span>ID REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')">
+                    <span>DNI REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')">
                     <div id="p-f-idr" class="preview-box"></div>
                 </div>
             </div>
@@ -191,7 +191,7 @@
                 <div class="foto-input-group"><input type="file" id="f-fin-3" onchange="previsualizar(this, 'p-fin-3')"><div id="p-fin-3" class="preview-box"></div></div>
             </div>
 
-            <label>Recibo Final:</label>
+            <label>Recibo de Pago:</label>
             <div class="foto-input-group">
                 <input type="file" id="f-recibo" onchange="previsualizar(this, 'p-f-recibo')">
                 <div id="p-f-recibo" class="preview-box" style="height: 100px;"></div>

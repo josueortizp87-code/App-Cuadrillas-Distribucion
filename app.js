@@ -84,9 +84,9 @@ async function generarPDFPoda() {
     doc.setFontSize(9);
     doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 15, 28);
     doc.text(`ZONA: ${document.getElementById('poda-zona').value} | FECHA: ${document.getElementById('poda-fecha').value}`, 15, 33);
-    doc.text(`METRICAS: Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`, 15, 38);
-    doc.text(`PAGOS: MO L${document.getElementById('pago-mo').value}, Trans L${document.getElementById('pago-trans').value}, Personas ${document.getElementById('poda-personas').value}`, 15, 43);
-    doc.text(`RESPONSABLES: Super. ${document.getElementById('resp-super').value}, Activ. ${document.getElementById('resp-activ').value}`, 15, 48);
+    doc.text(`TRABAJO EJECUTADO: Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`, 15, 38);
+    doc.text(`PAGOS: MO L. ${document.getElementById('pago-mo').value}, Trans L. ${document.getElementById('pago-trans').value}, Personas ${document.getElementById('poda-personas').value}`, 15, 43);
+    doc.text(`RESPONSABLES: Super. ${document.getElementById('resp-super').value}, Contr. ${document.getElementById('resp-activ').value}`, 15, 48);
     doc.text(`GPS: Inicio ${gpsIni} / Fin ${gpsFin}`, 15, 53);
 
     const fGrupo = await leerFoto('f-grupo');
