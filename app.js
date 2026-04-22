@@ -32,29 +32,60 @@ function ocultarTodo() {
 
 function seleccionarPrioridad(btn, valor) {
     const btns = document.querySelectorAll('.btn-prioridad');
-    btns.forEach(b => b.style.background = '#333');
+    btns.forEach(b => {
+        b.style.background = '#333';
+        b.style.color = 'white';
+    });
     btn.style.background = '#f1c40f';
     btn.style.color = 'black';
     prioridadSeleccionada = valor;
 }
 
+// --- LÓGICA DE MAPAS CON GPS REAL ---
+
 function initMapInsp() {
     if (mapI) mapI.remove();
-    mapI = L.map('map-insp').setView([14.65, -86.21], 14);
+    mapI = L.map('map-insp').setView([14.65, -86.21], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapI);
+
+    // Crear marcador inicial arrastrable
     markerI = L.marker([14.65, -86.21], {draggable: true}).addTo(mapI);
-    markerI.on('move', function(e) {
+
+    // Intentar obtener ubicación real
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            let lat = pos.coords.latitude;
+            let lng = pos.coords.longitude;
+            mapI.setView([lat, lng], 17);
+            markerI.setLatLng([lat, lng]);
+            document.getElementById('txt-coords-insp').innerText = lat.toFixed(6) + ", " + lng.toFixed(6);
+        });
+    }
+
+    markerI.on('moveend', function(e) {
         let p = e.target.getLatLng();
         document.getElementById('txt-coords-insp').innerText = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
     });
+
     setTimeout(() => mapI.invalidateSize(), 300);
 }
 
 function initMapPoda() {
     if (mapP) mapP.remove();
-    mapP = L.map('map-poda').setView([14.65, -86.21], 14);
+    mapP = L.map('map-poda').setView([14.65, -86.21], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapP);
+
     markerP = L.marker([14.65, -86.21], {draggable: true}).addTo(mapP);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            let lat = pos.coords.latitude;
+            let lng = pos.coords.longitude;
+            mapP.setView([lat, lng], 17);
+            markerP.setLatLng([lat, lng]);
+        });
+    }
+
     setTimeout(() => mapP.invalidateSize(), 300);
 }
 
@@ -65,10 +96,13 @@ function marcarGPS(tipo) {
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
+// --- GENERACIÓN DE PDF Y PREVISUALIZACIÓN ---
+
 async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const dibujarMarco = () => { doc.setDrawColor(40); doc.setLineWidth(0.5); doc.rect(5, 5, 200, 287); };
+
     const leerFoto = (id) => {
         const file = document.getElementById(id).files[0];
         if (!file) return null;
@@ -94,9 +128,11 @@ async function generarPDFPoda() {
 
     const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
     for(let p of idsPersonal){
-        doc.addPage(); dibujarMarco();
         const img = await leerFoto(p.id);
-        if(img) { doc.text(p.t, 15, 15); doc.addImage(img, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260); }
+        if(img) {
+            doc.addPage(); dibujarMarco();
+            doc.text(p.t, 15, 15); doc.addImage(img, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
+        }
     }
 
     doc.addPage(); dibujarMarco();
@@ -112,29 +148,27 @@ async function generarPDFPoda() {
         y+=85;
     }
 
-    doc.addPage(); dibujarMarco();
     const rec = await leerFoto('f-recibo');
-    if(rec){ doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260); }
+    if(rec){
+        doc.addPage(); dibujarMarco();
+        doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
+    }
 
     doc.save("Informe_Poda_Final.pdf");
 }
+
 function previsualizar(input, idContenedor) {
     const contenedor = document.getElementById(idContenedor);
-    contenedor.innerHTML = ""; // Limpiar si ya había una foto
-
+    contenedor.innerHTML = "";
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-
         reader.onload = function(e) {
             const img = document.createElement('img');
             img.src = e.target.result;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "cover"; // Para que no se deforme
-            img.style.borderRadius = "4px";
+            img.style.width = "100%"; img.style.height = "100%";
+            img.style.objectFit = "cover"; img.style.borderRadius = "4px";
             contenedor.appendChild(img);
         }
-
         reader.readAsDataURL(input.files[0]);
     }
 }
