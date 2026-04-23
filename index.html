@@ -3,85 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENEE - Gestión de Distribución</title>
+    <title>ENEE - Zonificación de Red</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
-    <div id="dashboard" class="container">
+    <div id="form-zonificacion-container" class="container">
         <header>
             <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
                  alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-            <h1>SECTOR JUTICALPA - GESTIÓN DE LA RED</h1>
+            <h1>SECTOR JUTICALPA - ZONIFICACIÓN</h1>
             <p>Desarrollador - Josué Ortiz</p>
         </header>
-        <div class="grid-menu">
-            <div class="card" onclick="mostrarSubmenu()">
-                <i class="fas fa-tools"></i><span> Mantenimiento</span>
-            </div>
-            <div class="card" onclick="mostrarFormulario('zonificacion')">
-                <i class="fas fa-map-marked-alt"></i><span> Zonificaciones</span>
-            </div>
-        </div>
-    </div>
 
-    <div id="submenu-mantenimiento" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <header><h1>MANTENIMIENTO</h1></header>
-        <div class="grid-menu">
-            <div class="card" onclick="mostrarFormulario('inspeccion')">
-                <i class="fas fa-search"></i><span> Inspección</span>
-            </div>
-            <div class="card" onclick="mostrarFormulario('poda')">
-                <i class="fas fa-leaf"></i><span> Poda Comunitaria</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="form-inspeccion-container" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <h2>REGISTRO DE INSPECCIÓN</h2>
-        <form id="form-insp-detalle">
-            <label>ID Inspección:</label><input type="text" id="id-insp" readonly class="input-readonly">
-            <label>Circuito:</label>
-            <select id="circ-insp">
-                <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
-                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
-                <option>GMC-L377 RS CAMPAMENTO</option>
-            </select>
-            <label>Nombre:</label><input type="text" id="nombre-insp" placeholder="Ej: Poste 45-JUT">
-            <label>Ubicación:</label>
-            <div id="map-insp" style="height: 250px; border-radius: 10px;"></div>
-            <p class="coords-text">Coordenadas: <span id="txt-coords-insp">0, 0</span></p>
-            <button type="button" class="btn-enviar" onclick="alert('Guardado')">FINALIZAR</button>
-        </form>
-    </div>
-
-    <div id="form-poda-container" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <header><h1>INFORME DE PODA</h1></header>
-        <form id="form-poda">
-            <label>Circuito:</label>
-            <select id="poda-circuito">
-                <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
-                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
-                <option>GMC-L377 RS CAMPAMENTO</option>
-            </select>
-            <label>Zona:</label><input type="text" id="poda-zona">
-            <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
-            <p class="coords-text" id="coords-display">Inicio: -- | Fin: --</p>
-            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR PDF</button>
-        </form>
-    </div>
-
-    <div id="form-zonificacion-container" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <header><h1>ZONIFICACIÓN</h1></header>
         <label>Circuito:</label>
         <select id="zonif-circuito">
             <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
@@ -89,13 +27,13 @@
             <option>GMC-L377 RS CAMPAMENTO</option>
         </select>
 
-        <div id="map-zonif" style="height: 350px; border-radius: 10px; border: 2px solid #444;"></div>
+        <div id="map-zonif" style="height: 400px; border-radius: 10px; border: 2px solid #444; margin-top: 10px;"></div>
 
-        <div class="grid-2">
-            <button type="button" class="btn-enviar" style="background:#4a5568; color:white;" onclick="abrirModalPunto('EXISTENTE')">
+        <div class="grid-2" style="margin-top: 15px;">
+            <button type="button" class="btn-enviar" style="background:#4a5568; color:white; margin-top:0;" onclick="abrirModalPunto('EXISTENTE')">
                 <i class="fas fa-circle"></i> + EXISTENTE
             </button>
-            <button type="button" class="btn-enviar" style="background:#27ae60; color:white;" onclick="abrirModalPunto('PROYECTADA')">
+            <button type="button" class="btn-enviar" style="background:#27ae60; color:white; margin-top:0;" onclick="abrirModalPunto('PROYECTADA')">
                 <i class="fas fa-plus-circle"></i> + PROYECTADA
             </button>
         </div>
@@ -112,27 +50,33 @@
 
     <div id="modal-punto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; padding:20px; overflow-y:auto;">
         <div style="background:#1a1a1a; padding:20px; border-radius:10px; max-width:500px; margin:auto;">
-            <h2 id="modal-titulo" style="color:white; border-bottom: 1px solid #333; padding-bottom:10px;">Detalle</h2>
-            <label style="color:white;">Num. Apoyo:</label><input type="text" id="p-apoyo" style="width:100%; margin-bottom:10px;">
-            <label style="color:white;">Tipo Poste:</label>
-            <select id="p-tipo-poste" style="width:100%; margin-bottom:10px;">
+            <h2 id="modal-titulo" style="color:white; border-bottom: 1px solid #333; padding-bottom:10px;">Detalle del Apoyo</h2>
+
+            <label>Num. Apoyo:</label><input type="text" id="p-apoyo">
+
+            <label>Tipo Poste:</label>
+            <select id="p-tipo-poste">
                 <option>PC 30FT</option><option>PC 35FT</option><option>PC 40FT</option><option>PC 45FT</option>
                 <option>PMA 30FT</option><option>PMA 35FT</option><option>PMA 40FT</option><option>PMA 45FT</option>
                 <option>PME 30FT</option><option>PME 35FT</option><option>PME 40FT</option><option>PME 45FT</option>
             </select>
-            <label style="color:white;">Estructura:</label><input type="text" id="p-estructura" style="width:100%; margin-bottom:10px;">
-            <label style="color:white;">Trafo (kVA):</label>
-            <select id="p-trafo" style="width:100%; margin-bottom:10px;">
+
+            <label>Estructura:</label><input type="text" id="p-estructura">
+
+            <label>Trafo (kVA):</label>
+            <select id="p-trafo">
                 <option>N/A</option><option>15 kVA</option><option>25 kVA</option><option>37.5 kVA</option>
                 <option>50 kVA</option><option>75 kVA</option><option>100 kVA</option>
             </select>
-            <div id="campos-existente-extra" style="display:none;">
-                <label style="color:white;">Cant. Clientes:</label><input type="number" id="p-clientes" style="width:100%; margin-bottom:10px;">
-                <label style="color:white;">Voltaje:</label><input type="text" id="p-voltaje" style="width:100%; margin-bottom:10px;">
+
+            <div id="campos-existente-extra">
+                <label>Cant. Clientes:</label><input type="number" id="p-clientes" value="0">
+                <label>Voltaje:</label><input type="text" id="p-voltaje" value="120/240V">
             </div>
-            <div class="grid-2">
-                <button type="button" class="btn-regresar" onclick="cerrarModal()">Cancelar</button>
-                <button type="button" class="btn-enviar" onclick="guardarPunto()">Guardar</button>
+
+            <div class="grid-2" style="margin-top:20px;">
+                <button type="button" class="btn-prioridad" onclick="cerrarModal()">CANCELAR</button>
+                <button type="button" class="btn-enviar" style="margin-top:0;" onclick="guardarPunto()">GUARDAR</button>
             </div>
         </div>
     </div>
