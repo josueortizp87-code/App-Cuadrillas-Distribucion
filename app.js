@@ -28,24 +28,21 @@ function ocultarTodo() {
     ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 }
 
-// CONFIGURACIÓN DE CAPAS
-// Capa Satelital para trabajar
+// CAPAS DE MAPA
 const capaSatelite = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-    maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], crossOrigin: 'anonymous'
+    maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], crossOrigin: true
 });
 
-// Capa de Arquitectura/Calles Libre (Wikimedia - Muy amigable para capturas)
-const capaCallesLibre = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
-    maxZoom: 19, crossOrigin: 'anonymous'
+// Usaremos esta capa estándar que suele tener menos restricciones
+const capaCallesPlano = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, crossOrigin: true
 });
 
-// MAPAS BÁSICOS
 function initMapInsp() {
     if (mapI) mapI.remove();
     mapI = L.map('map-insp').setView([14.65, -86.21], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapI);
     markerI = L.marker([14.65, -86.21], {draggable: true}).addTo(mapI);
-    setTimeout(() => mapI.invalidateSize(), 300);
 }
 
 function initMapPoda() {
@@ -53,15 +50,14 @@ function initMapPoda() {
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapP);
     markerP = L.marker([14.65, -86.21], {draggable: true}).addTo(mapP);
-    setTimeout(() => mapP.invalidateSize(), 300);
 }
 
 // ZONIFICACIÓN
 function initMapZonif() {
     if (mapZ) mapZ.remove();
-    mapZ = L.map('map-zonif', { preferCanvas: false }).setView([14.65, -86.21], 16);
-
-    capaSatelite.addTo(mapZ); // Trabajamos en Satélite
+    // Importante: No usar preferCanvas aquí para que html2canvas vea los elementos SVG
+    mapZ = L.map('map-zonif').setView([14.65, -86.21], 16);
+    capaSatelite.addTo(mapZ);
 
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
     if (navigator.geolocation) {
@@ -98,33 +94,26 @@ function guardarPunto() {
     cerrarModal();
 }
 
-// DIBUJO CON SVG PARA EVITAR "CUADROS"
 function dibujarPuntoEnMapa(p) {
     let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
-    let svgHtml = "";
+    let svgIcon;
 
     if (p.trafo !== "N/A") {
-        // SVG Triángulo real
-        svgHtml = `
-            <svg width="18" height="18" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="50,5 95,95 5,95" fill="${color}" stroke="white" stroke-width="5"/>
-            </svg>`;
+        // SVG Triángulo puro
+        svgIcon = L.divIcon({
+            className: 'svg-marker',
+            html: `<svg width="20" height="20" viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill="${color}" stroke="white" stroke-width="8"/></svg>`,
+            iconSize: [20, 20], iconAnchor: [10, 10]
+        });
     } else {
-        // SVG Círculo real
-        svgHtml = `
-            <svg width="14" height="14" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="40" fill="${color}" stroke="white" stroke-width="8"/>
-            </svg>`;
+        // SVG Círculo puro
+        svgIcon = L.divIcon({
+            className: 'svg-marker',
+            html: `<svg width="16" height="16" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="${color}" stroke="white" stroke-width="10"/></svg>`,
+            iconSize: [16, 16], iconAnchor: [8, 8]
+        });
     }
-
-    const icon = L.divIcon({
-        className: 'custom-icon',
-        html: svgHtml,
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
-    });
-
-    L.marker([p.lat, p.lng], { icon: icon }).addTo(mapZ);
+    L.marker([p.lat, p.lng], { icon: svgIcon }).addTo(mapZ);
 }
 
 // GENERAR PPTX
@@ -132,37 +121,39 @@ async function generarPowerPoint() {
     let pptx = new PptxGenJS();
     const circuito = document.getElementById('zonif-circuito').value;
 
-    // 1. CAMBIAR A MAPA DE ARQUITECTURA (Wikimedia)
+    // 1. CAMBIO A CAPA DE CALLES
     mapZ.removeLayer(capaSatelite);
-    capaCallesLibre.addTo(mapZ);
+    capaCallesPlano.addTo(mapZ);
 
-    // Esperar a que carguen las calles
-    await new Promise(r => setTimeout(r, 2000));
+    // Esperar a que las baldosas del mapa carguen realmente
+    await new Promise(resolve => setTimeout(resolve, 2500));
 
     let slidePortada = pptx.addSlide();
     slidePortada.addText(`PLANO TÉCNICO: ${circuito}`, { x:0.5, y:0.4, fontSize:20, bold:true, color:'003366' });
 
     try {
+        // Configuración agresiva para capturar el fondo
         const canvas = await html2canvas(document.getElementById('map-zonif'), {
             useCORS: true,
             allowTaint: false,
-            scale: 2,
-            logging: true
+            ignoreElements: (node) => node.classList && node.classList.contains('leaflet-control-container'),
+            logging: false,
+            scale: 2
         });
         const imgData = canvas.toDataURL('image/png');
         slidePortada.addImage({ data: imgData, x:0.2, y:1.0, w:9.6, h:4.5 });
     } catch(e) {
-        slidePortada.addText("Falla en renderizado de fondo.", { x:1, y:2, color:'red' });
+        slidePortada.addText("Error en captura. Intente desde un navegador en PC.", { x:1, y:2, color:'red' });
     }
 
-    // REGRESAR A SATÉLITE
-    mapZ.removeLayer(capaCallesLibre);
+    // REGRESAR A MODO TRABAJO
+    mapZ.removeLayer(capaCallesPlano);
     capaSatelite.addTo(mapZ);
 
-    // 2. DIAPOSITIVAS DE DATOS (6 por hoja)
+    // TABLAS DE DATOS
     for (let i = 0; i < puntosLevantados.length; i += 6) {
         let slide = pptx.addSlide();
-        slide.addText(`DATOS DE CAMPO - ${circuito}`, { x:0.5, y:0.2, fontSize:14, bold:true });
+        slide.addText(`DATOS DE LEVANTAMIENTO - ${circuito}`, { x:0.5, y:0.2, fontSize:14, bold:true });
         let yPos = 0.7;
         for (let j = i; j < i + 6 && j < puntosLevantados.length; j++) {
             let p = puntosLevantados[j];
