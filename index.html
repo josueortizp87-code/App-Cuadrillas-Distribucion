@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -21,12 +22,10 @@
         </header>
         <div class="grid-menu">
             <div class="card" onclick="mostrarSubmenu()">
-                <i class="fas fa-tools"></i>
-                <span>Mantenimiento</span>
+                <i class="fas fa-tools"></i><span> Mantenimiento</span>
             </div>
             <div class="card" onclick="mostrarFormulario('zonificacion')">
-                <i class="fas fa-map-marked-alt"></i>
-                <span>Zonificaciones</span>
+                <i class="fas fa-map-marked-alt"></i><span> Zonificaciones</span>
             </div>
         </div>
     </div>
@@ -36,12 +35,10 @@
         <header><h1>MANTENIMIENTO</h1></header>
         <div class="grid-menu">
             <div class="card" onclick="mostrarFormulario('inspeccion')">
-                <i class="fas fa-search"></i>
-                <span>Inspección</span>
+                <i class="fas fa-search"></i><span> Inspección</span>
             </div>
             <div class="card" onclick="mostrarFormulario('poda')">
-                <i class="fas fa-leaf"></i>
-                <span>Poda Comunitaria</span>
+                <i class="fas fa-leaf"></i><span> Poda Comunitaria</span>
             </div>
         </div>
     </div>
@@ -50,41 +47,18 @@
         <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
         <h2>REGISTRO DE INSPECCIÓN</h2>
         <form id="form-insp-detalle">
-            <label>ID Inspección:</label>
-            <input type="text" id="id-insp" readonly class="input-readonly">
-
+            <label>ID Inspección:</label><input type="text" id="id-insp" readonly class="input-readonly">
             <label>Circuito:</label>
             <select id="circ-insp">
                 <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
                 <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
                 <option>GMC-L377 RS CAMPAMENTO</option>
             </select>
-
-            <label>Nombre de Inspección:</label>
-            <input type="text" id="nombre-insp" placeholder="Ej: Poste 45-JUT">
-
-            <label>Fecha:</label>
-            <input type="date" id="fecha-insp">
-
-            <label>Prioridad:</label>
-            <div class="selector-botones" id="prioridad-insp">
-                <button type="button" class="btn-prioridad" onclick="seleccionarPrioridad(this, 'ALTA')">ALTA</button>
-                <button type="button" class="btn-prioridad" onclick="seleccionarPrioridad(this, 'MEDIA')">MEDIA</button>
-                <button type="button" class="btn-prioridad" onclick="seleccionarPrioridad(this, 'BAJA')">BAJA</button>
-            </div>
-
-            <label>Evidencia (3 Fotos):</label>
-            <div class="grid-3">
-                <div class="foto-input-group"><input type="file" id="insp-f1" onchange="previsualizar(this, 'p-insp-1')"><div id="p-insp-1" class="preview-box"></div></div>
-                <div class="foto-input-group"><input type="file" id="insp-f2" onchange="previsualizar(this, 'p-insp-2')"><div id="p-insp-2" class="preview-box"></div></div>
-                <div class="foto-input-group"><input type="file" id="insp-f3" onchange="previsualizar(this, 'p-insp-3')"><div id="p-insp-3" class="preview-box"></div></div>
-            </div>
-
+            <label>Nombre:</label><input type="text" id="nombre-insp" placeholder="Ej: Poste 45-JUT">
             <label>Ubicación:</label>
             <div id="map-insp" style="height: 250px; border-radius: 10px;"></div>
             <p class="coords-text">Coordenadas: <span id="txt-coords-insp">0, 0</span></p>
-
-            <button type="button" class="btn-enviar" onclick="alert('Guardado correctamente')">FINALIZAR REGISTRO</button>
+            <button type="button" class="btn-enviar" onclick="alert('Guardado')">FINALIZAR</button>
         </form>
     </div>
 
@@ -98,28 +72,10 @@
                 <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
                 <option>GMC-L377 RS CAMPAMENTO</option>
             </select>
-            <label>Zona de Trabajo:</label>
-            <input type="text" id="poda-zona">
-            <label>Fecha:</label>
-            <input type="date" id="poda-fecha">
-            <label>Trabajo ejecutado (m):</label>
-            <div class="grid-3">
-                <input type="number" id="m-brecha" placeholder="Brecha">
-                <input type="number" id="m-poda" placeholder="Poda">
-                <input type="number" id="m-postes" placeholder="Postes">
-            </div>
-            <label>Responsables:</label>
-            <input type="text" id="resp-super" placeholder="Supervisión">
-            <input type="text" id="resp-activ" placeholder="Contratista">
-
-            <label>GPS:</label>
+            <label>Zona:</label><input type="text" id="poda-zona">
             <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
-            <div class="grid-2">
-                <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">GPS INICIO</button>
-                <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">GPS FINAL</button>
-            </div>
             <p class="coords-text" id="coords-display">Inicio: -- | Fin: --</p>
-            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME PDF</button>
+            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR PDF</button>
         </form>
     </div>
 
@@ -132,29 +88,31 @@
             <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
             <option>GMC-L377 RS CAMPAMENTO</option>
         </select>
-        <label>Comentarios Zona:</label>
-        <input type="text" id="zonif-comentario" placeholder="Ej: Levantamiento Calle Principal">
 
-        <div id="map-zonif" style="height: 350px; border-radius: 10px; margin-bottom: 10px;"></div>
+        <div id="map-zonif" style="height: 350px; border-radius: 10px; border: 2px solid #444;"></div>
 
         <div class="grid-2">
-            <button type="button" class="btn-enviar" style="background:#000;" onclick="abrirModalPunto('EXISTENTE')">+ EXISTENTE</button>
-            <button type="button" class="btn-enviar" style="background:#27ae60;" onclick="abrirModalPunto('PROYECTADA')">+ PROYECTADA</button>
+            <button type="button" class="btn-enviar" style="background:#4a5568; color:white;" onclick="abrirModalPunto('EXISTENTE')">
+                <i class="fas fa-circle"></i> + EXISTENTE
+            </button>
+            <button type="button" class="btn-enviar" style="background:#27ae60; color:white;" onclick="abrirModalPunto('PROYECTADA')">
+                <i class="fas fa-plus-circle"></i> + PROYECTADA
+            </button>
         </div>
 
         <div id="lista-puntos" style="margin-top:15px; color:white;">
-            <h3>Puntos registrados:</h3>
-            <ul id="ul-puntos" style="padding:0; list-style:none;"></ul>
+            <h3>Levantamiento: <span id="contador-puntos">0</span> apoyos</h3>
+            <ul id="ul-puntos" style="padding:0; list-style:none; font-size: 0.9em; opacity: 0.8;"></ul>
         </div>
 
-        <button type="button" class="btn-secundario" style="width:100%; margin-top:20px;" onclick="generarPowerPoint()">
-            <i class="fas fa-file-powerpoint"></i> GENERAR PPTX
+        <button type="button" class="btn-secundario" style="width:100%; margin-top:20px; background:#e67e22;" onclick="generarPowerPoint()">
+            <i class="fas fa-file-powerpoint"></i> GENERAR PPTX (PLANO + TABLAS)
         </button>
     </div>
 
     <div id="modal-punto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; padding:20px; overflow-y:auto;">
         <div style="background:#1a1a1a; padding:20px; border-radius:10px; max-width:500px; margin:auto;">
-            <h2 id="modal-titulo" style="color:white;">Detalle Apoyo</h2>
+            <h2 id="modal-titulo" style="color:white; border-bottom: 1px solid #333; padding-bottom:10px;">Detalle</h2>
             <label style="color:white;">Num. Apoyo:</label><input type="text" id="p-apoyo" style="width:100%; margin-bottom:10px;">
             <label style="color:white;">Tipo Poste:</label>
             <select id="p-tipo-poste" style="width:100%; margin-bottom:10px;">

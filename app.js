@@ -5,10 +5,8 @@ var puntosLevantados = [];
 var tipoPuntoActual = "";
 
 // NAVEGACIÓN
-function mostrarSubmenu() {
-    ocultarTodo();
-    document.getElementById('submenu-mantenimiento').style.display = 'block';
-}
+function mostrarSubmenu() { ocultarTodo(); document.getElementById('submenu-mantenimiento').style.display = 'block'; }
+function volverAlDashboard() { ocultarTodo(); document.getElementById('dashboard').style.display = 'block'; }
 
 function mostrarFormulario(tipo) {
     ocultarTodo();
@@ -26,25 +24,12 @@ function mostrarFormulario(tipo) {
     window.scrollTo(0,0);
 }
 
-function volverAlDashboard() {
-    ocultarTodo();
-    document.getElementById('dashboard').style.display = 'block';
-}
-
 function ocultarTodo() {
     const ids = ['dashboard','submenu-mantenimiento','form-inspeccion-container','form-poda-container','form-zonificacion-container'];
     ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 }
 
-function seleccionarPrioridad(btn, valor) {
-    const btns = document.querySelectorAll('.btn-prioridad');
-    btns.forEach(b => { b.style.background = '#333'; b.style.color = 'white'; });
-    btn.style.background = '#f1c40f';
-    btn.style.color = 'black';
-    prioridadSeleccionada = valor;
-}
-
-// MAPAS (INSPECCIÓN Y PODA)
+// LÓGICA MAPAS BÁSICOS
 function initMapInsp() {
     if (mapI) mapI.remove();
     mapI = L.map('map-insp').setView([14.65, -86.21], 15);
@@ -52,16 +37,10 @@ function initMapInsp() {
     markerI = L.marker([14.65, -86.21], {draggable: true}).addTo(mapI);
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
-            let lat = pos.coords.latitude, lng = pos.coords.longitude;
-            mapI.setView([lat, lng], 17);
-            markerI.setLatLng([lat, lng]);
-            document.getElementById('txt-coords-insp').innerText = lat.toFixed(6) + ", " + lng.toFixed(6);
+            mapI.setView([pos.coords.latitude, pos.coords.longitude], 17);
+            markerI.setLatLng([pos.coords.latitude, pos.coords.longitude]);
         });
     }
-    markerI.on('moveend', e => {
-        let p = e.target.getLatLng();
-        document.getElementById('txt-coords-insp').innerText = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
-    });
     setTimeout(() => mapI.invalidateSize(), 300);
 }
 
@@ -70,12 +49,6 @@ function initMapPoda() {
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapP);
     markerP = L.marker([14.65, -86.21], {draggable: true}).addTo(mapP);
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            mapP.setView([pos.coords.latitude, pos.coords.longitude], 17);
-            markerP.setLatLng([pos.coords.latitude, pos.coords.longitude]);
-        });
-    }
     setTimeout(() => mapP.invalidateSize(), 300);
 }
 
@@ -86,13 +59,14 @@ function marcarGPS(tipo) {
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
-// LÓGICA ZONIFICACIÓN
+// LÓGICA ZONIFICACIÓN (MAPA ESTILO PLANO)
 function initMapZonif() {
     if (mapZ) mapZ.remove();
-    mapZ = L.map('map-zonif').setView([14.65, -86.21], 16);
-    // CAPA SATELITAL GOOGLE
-    L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-        maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
+    mapZ = L.map('map-zonif', { preferCanvas: true }).setView([14.65, -86.21], 16);
+
+    // Capa estilo PLANO (Solo líneas de calles, fondo claro)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '©OpenStreetMap'
     }).addTo(mapZ);
 
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
@@ -108,13 +82,9 @@ function initMapZonif() {
 function abrirModalPunto(tipo) {
     tipoPuntoActual = tipo;
     document.getElementById('modal-punto').style.display = 'block';
-    document.getElementById('modal-titulo').innerText = "DETALLE RED " + tipo;
     document.getElementById('campos-existente-extra').style.display = (tipo === 'EXISTENTE') ? 'block' : 'none';
 }
-
-function cerrarModal() {
-    document.getElementById('modal-punto').style.display = 'none';
-}
+function cerrarModal() { document.getElementById('modal-punto').style.display = 'none'; }
 
 function guardarPunto() {
     const coords = markerZ.getLatLng();
@@ -130,54 +100,68 @@ function guardarPunto() {
     };
     puntosLevantados.push(punto);
     dibujarPuntoEnMapa(punto);
-    actualizarListaPuntosUI();
+    document.getElementById('contador-puntos').innerText = puntosLevantados.length;
     cerrarModal();
 }
 
 function dibujarPuntoEnMapa(p) {
-    let color = (p.tipoRed === 'EXISTENTE') ? 'black' : '#27ae60';
-    let htmlContent = "";
+    let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
+    let html = (p.trafo !== "N/A")
+        ? `<div style="width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-bottom:16px solid ${color};"></div>`
+        : `<div style="width:12px; height:12px; background:${color}; border-radius:50%; border:1px solid white;"></div>`;
 
-    if (p.trafo !== "N/A") {
-        // Triángulo
-        htmlContent = `<div style="width:0; height:0; border-left:10px solid transparent; border-right:10px solid transparent; border-bottom:18px solid ${color};"></div>`;
-    } else {
-        // Círculo
-        htmlContent = `<div style="width:14px; height:14px; background:${color}; border-radius:50%; border:2px solid white;"></div>`;
+    const icon = L.divIcon({ className: 'custom-icon', html: html, iconSize: [16, 16] });
+    L.marker([p.lat, p.lng], {icon: icon}).addTo(mapZ);
+}
+
+// GENERAR POWERPOINT (6 PUNTOS POR HOJA + PLANO)
+async function generarPowerPoint() {
+    let pptx = new PptxGenJS();
+    const circuito = document.getElementById('zonif-circuito').value;
+
+    // 1. Slide de Portada con Plano
+    let slidePortada = pptx.addSlide();
+    slidePortada.addText(`PLANO DE LEVANTAMIENTO - ${circuito}`, { x:0.5, y:0.4, fontSize:20, bold:true, color:'003366' });
+
+    // Captura del mapa como imagen (Planos)
+    try {
+        const canvas = await html2canvas(document.getElementById('map-zonif'));
+        const imgData = canvas.toDataURL('image/png');
+        slidePortada.addImage({ data: imgData, x:0.5, y:1.0, w:9.0, h:4.5 });
+    } catch(e) {
+        slidePortada.addText("No se pudo capturar el mapa", { x:1, y:2, color:'red' });
     }
 
-    const icon = L.divIcon({ className: 'custom-icon', html: htmlContent, iconSize: [20, 20] });
-    L.marker([p.lat, p.lng], {icon: icon}).addTo(mapZ).bindPopup(`Apoyo: ${p.apoyo}`);
-}
-
-function actualizarListaPuntosUI() {
-    const ul = document.getElementById('ul-puntos');
-    ul.innerHTML = puntosLevantados.map(p => `<li>• Apoyo ${p.apoyo} (${p.tipoRed})</li>`).join('');
-}
-
-// GENERAR POWERPOINT
-function generarPowerPoint() {
-    let pptx = new PptxGenJS();
-    puntosLevantados.forEach(p => {
+    // 2. Slides de Datos (6 por página)
+    for (let i = 0; i < puntosLevantados.length; i += 6) {
         let slide = pptx.addSlide();
-        slide.addText(`Levantamiento: Apoyo ${p.apoyo}`, { x: 0.5, y: 0.5, fontSize: 22, bold: true });
-        let rows = [
-            ["Campo", "Valor"],
-            ["Tipo de Red", p.tipoRed],
-            ["Tipo de Poste", p.poste],
-            ["Estructura", p.estructura],
-            ["Transformador", p.trafo],
-            ["Clientes", p.clientes],
-            ["Voltaje", p.voltaje],
-            ["Coordenadas", `${p.lat}, ${p.lng}`]
-        ];
-        slide.addTable(rows, { x: 0.5, y: 1.2, w: 5.0, fontSize: 12, border: { pt: 1, color: 'CCCCCC' } });
-        slide.addText("ING. JOSUÉ ORTIZ - ENEE JUTICALPA", { x: 0.5, y: 5.2, fontSize: 10, color: '666666' });
-    });
-    pptx.writeFile({ fileName: `Zonificacion_${document.getElementById('zonif-circuito').value}.pptx` });
+        slide.addText(`DETALLE TÉCNICO - APOYOS (${i+1} al ${Math.min(i+6, puntosLevantados.length)})`, { x:0.5, y:0.2, fontSize:14, bold:true });
+
+        let yPos = 0.7;
+        for (let j = i; j < i + 6 && j < puntosLevantados.length; j++) {
+            let p = puntosLevantados[j];
+            let colorHex = (p.tipoRed === 'EXISTENTE') ? '333333' : '27ae60';
+
+            slide.addText(`Apoyo: ${p.apoyo} [${p.tipoRed}]`, { x:0.5, y:yPos, fontSize:11, bold:true, color: colorHex });
+
+            let tableData = [
+                ["Poste", "Estructura", "Trafo", "Clientes", "Voltaje"],
+                [p.poste, p.estructura, p.trafo, p.clientes, p.voltaje]
+            ];
+
+            slide.addTable(tableData, {
+                x:0.5, y:yPos + 0.25, w:9.0, rowH:0.2,
+                fontSize:9, border:{pt:1, color:'CCCCCC'},
+                fill:'F9F9F9'
+            });
+
+            yPos += 0.85; // Espacio entre tablas
+        }
+    }
+
+    pptx.writeFile({ fileName: `Zonif_${circuito}.pptx` });
 }
 
-// FUNCIONES AUXILIARES (PREVIEW Y PDF)
 function previsualizar(input, idContenedor) {
     const contenedor = document.getElementById(idContenedor);
     contenedor.innerHTML = "";
@@ -191,13 +175,4 @@ function previsualizar(input, idContenedor) {
         };
         reader.readAsDataURL(input.files[0]);
     }
-}
-
-async function generarPDFPoda() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("INFORME DE PODA - SECTOR JUTICALPA", 15, 20);
-    doc.text(`Circuito: ${document.getElementById('poda-circuito').value}`, 15, 30);
-    doc.text(`GPS: ${gpsIni} / ${gpsFin}`, 15, 40);
-    doc.save("Reporte_Poda.pdf");
 }
