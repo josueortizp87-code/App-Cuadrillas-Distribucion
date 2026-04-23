@@ -38,9 +38,18 @@
             </button>
         </div>
 
+        <div class="grid-2" style="margin-top: 10px;">
+            <button type="button" class="btn-secundario" style="margin-top:0; border-color:#fff; color:#fff;" onclick="setModoDibujo('EXISTENTE')">
+                <i class="fas fa-horizontal-rule"></i> LÍNEA NEGRA (EXIST)
+            </button>
+            <button type="button" class="btn-secundario" style="margin-top:0; border-color:#27ae60; color:#27ae60;" onclick="setModoDibujo('PROYECTADA')">
+                <i class="fas fa-ellipsis-h"></i> LÍNEA VERDE (PROY)
+            </button>
+        </div>
+
         <div id="lista-puntos" style="margin-top:15px; color:white;">
             <h3>Levantamiento: <span id="contador-puntos">0</span> apoyos</h3>
-            <ul id="ul-puntos" style="padding:0; list-style:none; font-size: 0.9em; opacity: 0.8;"></ul>
+            <ul id="ul-puntos" style="padding:0; list-style:none; font-size: 0.8em; opacity: 0.7;"></ul>
         </div>
 
         <button type="button" class="btn-secundario" style="width:100%; margin-top:20px; background:#e67e22;" onclick="generarPowerPoint()">
