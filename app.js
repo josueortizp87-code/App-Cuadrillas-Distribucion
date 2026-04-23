@@ -1,25 +1,37 @@
 var mapI, mapP, mapZ, markerI, markerP, markerZ;
 var puntosLevantados = [];
 var lineasRed = [];
+var tipoPuntoActual = "";
+var modoDibujo = null;
 var puntoOrigenParaLinea = null;
-var modoDibujo = null; // "EXISTENTE" o "PROYECTADA"
 
-// --- NAVEGACIÓN Y CONFIGURACIÓN ---
+// --- FUNCIONES DE NAVEGACIÓN ---
+function mostrarSubmenu() {
+    ocultarTodo();
+    document.getElementById('submenu-mantenimiento').style.display = 'block';
+}
+function volverAlDashboard() {
+    ocultarTodo();
+    document.getElementById('dashboard').style.display = 'block';
+}
 function mostrarFormulario(tipo) {
     ocultarTodo();
     if(tipo === 'zonificacion') {
         document.getElementById('form-zonificacion-container').style.display = 'block';
         initMapZonif();
+    } else if(tipo === 'inspeccion') {
+        document.getElementById('form-inspeccion-container').style.display = 'block';
+    } else if(tipo === 'poda') {
+        document.getElementById('form-poda-container').style.display = 'block';
     }
     window.scrollTo(0,0);
 }
-
 function ocultarTodo() {
-    const ids = ['dashboard','submenu-mantenimiento','form-zonificacion-container'];
+    const ids = ['dashboard','submenu-mantenimiento','form-zonificacion-container','form-inspeccion-container','form-poda-container'];
     ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 }
 
-// CAPAS
+// --- CAPAS DE MAPA ---
 const capaSatelite = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
     maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], crossOrigin: true
 });
@@ -33,16 +45,29 @@ function initMapZonif() {
     capaSatelite.addTo(mapZ);
 
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
-
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
             mapZ.setView([pos.coords.latitude, pos.coords.longitude], 18);
             markerZ.setLatLng([pos.coords.latitude, pos.coords.longitude]);
         });
     }
+    setTimeout(() => mapZ.invalidateSize(), 300);
 }
 
-// --- LÓGICA DE PUNTOS ---
+// --- GESTIÓN DE PUNTOS (MODAL) ---
+function abrirModalPunto(tipo) {
+    tipoPuntoActual = tipo;
+    document.getElementById('modal-titulo').innerText = "Detalle: " + tipo;
+    document.getElementById('modal-punto').style.display = 'block';
+
+    // Mostrar campos extra (clientes/voltaje) para ambos tipos
+    document.getElementById('campos-existente-extra').style.display = 'block';
+}
+
+function cerrarModal() {
+    document.getElementById('modal-punto').style.display = 'none';
+}
+
 function guardarPunto() {
     const coords = markerZ.getLatLng();
     const punto = {
@@ -50,7 +75,7 @@ function guardarPunto() {
         tipoRed: tipoPuntoActual,
         lat: coords.lat,
         lng: coords.lng,
-        utm: latLngToUTM(coords.lat, coords.lng),
+        utm: latLngToUTM(coords.lat, coords.lng), // Coordenadas UTM
         apoyo: document.getElementById('p-apoyo').value || "S/N",
         poste: document.getElementById('p-tipo-poste').value,
         estructura: document.getElementById('p-estructura').value || "S/D",
@@ -65,31 +90,37 @@ function guardarPunto() {
     cerrarModal();
 }
 
+// --- DIBUJO DE ICONOS (TAMAÑO 50% REDUCIDO) ---
 function dibujarPuntoEnMapa(p) {
     let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
     let etiqueta = `${p.clientes} C`;
 
-    // Tamaño reducido al 50% (aprox 22px)
+    // SVG reducido a 25px (aprox 50% del anterior)
     let svgHtml = p.trafo !== "N/A" ?
         `<svg width="25" height="25" viewBox="0 0 100 100">
-            <polygon points="50,25 90,90 10,90" fill="${color}" stroke="white" stroke-width="5"/>
-            <text x="50" y="20" font-family="Arial" font-size="24" font-weight="bold" fill="${color}" text-anchor="middle" stroke="white" stroke-width="3" paint-order="stroke">${etiqueta}</text>
+            <polygon points="50,20 90,90 10,90" fill="${color}" stroke="white" stroke-width="6"/>
+            <text x="50" y="15" font-family="Arial" font-size="26" font-weight="bold" fill="${color}" text-anchor="middle" stroke="white" stroke-width="4" paint-order="stroke">${etiqueta}</text>
         </svg>` :
         `<svg width="25" height="25" viewBox="0 0 100 100">
-            <circle cx="50" cy="65" r="30" fill="${color}" stroke="white" stroke-width="6"/>
-            <text x="50" y="30" font-family="Arial" font-size="24" font-weight="bold" fill="${color}" text-anchor="middle" stroke="white" stroke-width="3" paint-order="stroke">${etiqueta}</text>
+            <circle cx="50" cy="60" r="30" fill="${color}" stroke="white" stroke-width="8"/>
+            <text x="50" y="25" font-family="Arial" font-size="26" font-weight="bold" fill="${color}" text-anchor="middle" stroke="white" stroke-width="4" paint-order="stroke">${etiqueta}</text>
         </svg>`;
 
-    const icon = L.divIcon({ className: 'svg-marker', html: svgHtml, iconSize: [25, 25], iconAnchor: [12, 12] });
+    const icon = L.divIcon({
+        className: 'svg-marker',
+        html: svgHtml,
+        iconSize: [25, 25],
+        iconAnchor: [12, 12]
+    });
 
     let m = L.marker([p.lat, p.lng], { icon: icon }).addTo(mapZ);
 
-    // Al hacer clic en un punto, si hay modo dibujo activo, traza línea
+    // Evento para trazado manual de líneas
     m.on('click', () => {
         if (!modoDibujo) return;
         if (!puntoOrigenParaLinea) {
             puntoOrigenParaLinea = p;
-            alert("Origen seleccionado. Haz clic en el siguiente punto.");
+            alert("Origen seleccionado: " + p.apoyo + ". Seleccione el siguiente punto.");
         } else {
             trazarLineaManual(puntoOrigenParaLinea, p, modoDibujo);
             puntoOrigenParaLinea = null;
@@ -97,11 +128,11 @@ function dibujarPuntoEnMapa(p) {
     });
 }
 
-// --- LÓGICA DE LÍNEAS MANUALES ---
+// --- TRAZADO DE LÍNEAS ---
 function setModoDibujo(tipo) {
     modoDibujo = tipo;
     puntoOrigenParaLinea = null;
-    alert("Modo: Dibujar Línea " + tipo + ". Toca dos puntos para unirlos.");
+    alert("MODO DIBUJO: " + tipo + ". Haga clic en dos postes para unirlos.");
 }
 
 function trazarLineaManual(pA, pB, tipo) {
@@ -112,17 +143,15 @@ function trazarLineaManual(pA, pB, tipo) {
         dashArray: esProy ? '8, 12' : null,
         opacity: 0.8
     };
-    L.polyline([[pA.lat, pA.lng], [pB.lat, pB.lng]], opciones).addTo(mapZ);
+    let linea = L.polyline([[pA.lat, pA.lng], [pB.lat, pB.lng]], opciones).addTo(mapZ);
+    lineasRed.push(linea);
 }
 
-// Conversión simple a UTM Zona 16 (Honduras)
+// --- CONVERSIÓN UTM (ZONA 16P - HONDURAS) ---
 function latLngToUTM(lat, lng) {
     const zone = 16;
-    const sa = 6378137.0;
-    const e = 0.081819191;
-    const e2 = e * e;
-    const latRad = lat * Math.PI / 180;
-    const lngRad = lng * Math.PI / 180;
+    const sa = 6378137.0; const e = 0.081819191; const e2 = e * e;
+    const latRad = lat * Math.PI / 180; const lngRad = lng * Math.PI / 180;
     const lngOrigin = (zone * 6 - 183) * Math.PI / 180;
     const n = sa / Math.sqrt(1 - e2 * Math.sin(latRad) * Math.sin(latRad));
     const t = Math.tan(latRad) * Math.tan(latRad);
@@ -134,33 +163,35 @@ function latLngToUTM(lat, lng) {
     return `E: ${x.toFixed(0)} N: ${y.toFixed(0)}`;
 }
 
+// --- GENERACIÓN DE POWERPOINT ---
 async function generarPowerPoint() {
     let pptx = new PptxGenJS();
-    const circ = document.getElementById('zonif-circuito').value;
+    const circuito = document.getElementById('zonif-circuito').value || "Zonificacion";
 
     mapZ.removeLayer(capaSatelite);
     capaCallesPlano.addTo(mapZ);
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-    let slide1 = pptx.addSlide();
-    slide1.addText(`PLANO TÉCNICO: ${circ}`, { x:0.5, y:0.3, fontSize:18, bold:true });
+    let slidePortada = pptx.addSlide();
+    slidePortada.addText(`PLANO TÉCNICO DE ZONIFICACIÓN: ${circuito}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
 
     try {
         const canvas = await html2canvas(document.getElementById('map-zonif'), { useCORS: true, scale: 2 });
-        slide1.addImage({ data: canvas.toDataURL('png'), x:0.2, y:0.8, w:9.6, h:4.8 });
+        const imgData = canvas.toDataURL('image/png');
+        slidePortada.addImage({ data: imgData, x:0.2, y:0.8, w:9.6, h:4.8 });
     } catch(e) { console.error(e); }
 
     mapZ.removeLayer(capaCallesPlano);
     capaSatelite.addTo(mapZ);
 
-    // RESUMEN CON COORDENADAS
+    // Tablas de detalles con Coordenadas UTM y GD
     for (let i = 0; i < puntosLevantados.length; i += 4) {
         let slide = pptx.addSlide();
-        slide.addText(`DETALLE DE APOYOS - ${circ}`, { x:0.5, y:0.2, fontSize:14, bold:true });
+        slide.addText(`RESUMEN DE APOYOS - ${circuito}`, { x:0.5, y:0.2, fontSize:14, bold:true });
         let yPos = 0.6;
         for (let j = i; j < i + 4 && j < puntosLevantados.length; j++) {
             let p = puntosLevantados[j];
-            slide.addText(`Apoyo: ${p.apoyo} | UTM: ${p.utm} | GD: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`, { x:0.5, y:yPos, fontSize:9, bold:true, color:'333333' });
+            slide.addText(`Apoyo: ${p.apoyo} | UTM: ${p.utm} | GD: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`, { x:0.5, y:yPos, fontSize:9, bold:true });
             let tableData = [
                 ["Poste", "Estructura", "Trafo", "Clientes", "Voltaje"],
                 [p.poste, p.estructura, p.trafo, p.clientes, p.voltaje]
@@ -169,5 +200,6 @@ async function generarPowerPoint() {
             yPos += 1.2;
         }
     }
-    pptx.writeFile({ fileName: `Zonificacion_${circ}.pptx` });
+
+    pptx.writeFile({ fileName: `Zonificacion_${circuito}.pptx` });
 }
