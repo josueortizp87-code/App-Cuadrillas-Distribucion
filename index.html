@@ -3,268 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Zonificación - Ing. Josué Ortiz</title>
-
+    <title>ENEE - Gestión de Distribución</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; }
-        .header { background-color: #003366; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        #dashboard, #form-zonificacion-container { padding: 20px; }
-
-        /* Contenedor del Mapa */
-        #map-zonif { height: 50vh; width: 100%; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-
-        /* Botones Principales */
-        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; min-width: 140px; }
-        .btn-existente { background-color: #445566; }
-        .btn-proyectada { background-color: #27ae60; }
-        .btn-linea-negra { background-color: #333; }
-        .btn-linea-verde { background-color: #2ecc71; }
-        .btn-pptx { background-color: #d35400; width: 100%; margin-top: 10px; }
-
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 10px; }
-        .form-group { margin-bottom: 10px; }
-        label { display: block; font-size: 12px; color: #666; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-
-        .contador { text-align: center; font-weight: bold; color: #003366; margin: 10px 0; }
-        .svg-marker { display: flex; justify-content: center; align-items: center; }
-    </style>
 </head>
 <body>
 
-<div class="header">
-    ING. JOSUÉ ORTIZ - SECTOR JUTICALPA<br>
-    <span style="font-size: 12px;">PROYECTO DE ZONIFICACIÓN DE REDES</span>
-</div>
-
-<div id="dashboard">
-    <button class="btn btn-existente" style="width: 100%;" onclick="mostrarFormulario('zonificacion')">
-        INICIAR LEVANTAMIENTO / ZONIFICACIÓN
-    </button>
-</div>
-
-<div id="form-zonificacion-container" style="display:none;">
-    <div class="form-group">
-        <label>CIRCUITO / TRAMO:</label>
-        <input type="text" id="zonif-circuito" placeholder="Ej: JUT-L379">
+    <div id="dashboard" class="container">
+        <header>
+            <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
+                 alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+            <h1>SECTOR JUTICALPA - GESTIÓN DE LA RED</h1>
+            <p>Desarrollador - Josué Ortiz</p>
+        </header>
+        <div class="grid-menu">
+            <div class="card" onclick="mostrarSubmenu()">
+                <i class="fas fa-tools"></i><span> Mantenimiento</span>
+            </div>
+            <div class="card" onclick="mostrarFormulario('zonificacion')">
+                <i class="fas fa-map-marked-alt"></i><span> Zonificaciones</span>
+            </div>
+        </div>
     </div>
 
-    <div id="map-zonif"></div>
-
-    <div class="contador">Puntos registrados: <span id="contador-puntos">0</span></div>
-
-    <div class="btn-group">
-        <button class="btn btn-existente" onclick="abrirModalPunto('EXISTENTE')">● + EXISTENTE</button>
-        <button class="btn btn-proyectada" onclick="abrirModalPunto('PROYECTADA')">● + PROYECTADA</button>
+    <div id="submenu-mantenimiento" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <header><h1>MANTENIMIENTO</h1></header>
+        <div class="grid-menu">
+            <div class="card" onclick="mostrarFormulario('inspeccion')">
+                <i class="fas fa-search"></i><span> Inspección</span>
+            </div>
+            <div class="card" onclick="mostrarFormulario('poda')">
+                <i class="fas fa-leaf"></i><span> Poda Comunitaria</span>
+            </div>
+        </div>
     </div>
 
-    <div class="btn-group">
-        <button class="btn btn-linea-negra" onclick="setModoDibujo('EXISTENTE')">✏️ LÍNEA EXISTENTE</button>
-        <button class="btn btn-linea-verde" onclick="setModoDibujo('PROYECTADA')">✏️ LÍNEA PROYECTADA</button>
-    </div>
-
-    <button class="btn btn-pptx" onclick="generarPowerPoint()">GENERAR REPORTE PPTX</button>
-    <button class="btn" style="background:#7f8c8d; width: 100%; margin-top: 5px;" onclick="location.reload()">VOLVER</button>
-</div>
-
-<div id="modal-punto" class="modal">
-    <div class="modal-content">
-        <h3 id="modal-titulo" style="margin-top:0;">Datos del Apoyo</h3>
-        <div class="form-group"><label>No. Apoyo (Poste):</label><input type="text" id="p-apoyo"></div>
-        <div class="form-group">
-            <label>Tipo de Poste:</label>
-            <select id="p-tipo-poste">
-                <option value="Concreto 35ft">Concreto 35ft</option>
-                <option value="Concreto 40ft">Concreto 40ft</option>
-                <option value="Madera">Madera</option>
-                <option value="Tubular">Tubular</option>
+    <div id="form-inspeccion-container" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h2>REGISTRO DE INSPECCIÓN</h2>
+        <form id="form-insp-detalle">
+            <label>ID Inspección:</label><input type="text" id="id-insp" readonly class="input-readonly">
+            <label>Circuito:</label>
+            <select id="circ-insp">
+                <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
+                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
+                <option>GMC-L377 RS CAMPAMENTO</option>
             </select>
-        </div>
-        <div class="form-group"><label>Estructura:</label><input type="text" id="p-estructura" placeholder="Ej: H1, RD3"></div>
-        <div class="form-group"><label>Capacidad Trafo (KVA) / N/A:</label><input type="text" id="p-trafo" value="N/A"></div>
-        <div class="form-group"><label>Cantidad de Clientes:</label><input type="number" id="p-clientes" value="0"></div>
-        <div class="form-group"><label>Voltaje:</label><input type="text" id="p-voltaje" value="13.8 kV"></div>
+            <label>Nombre:</label><input type="text" id="nombre-insp" placeholder="Ej: Poste 45-JUT">
+            <label>Ubicación:</label>
+            <div id="map-insp" style="height: 250px; border-radius: 10px;"></div>
+            <p class="coords-text">Coordenadas: <span id="txt-coords-insp">0, 0</span></p>
+            <button type="button" class="btn-enviar" onclick="alert('Guardado')">FINALIZAR</button>
+        </form>
+    </div>
 
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn btn-proyectada" onclick="guardarPunto()">GUARDAR</button>
-            <button class="btn" style="background:#c0392b;" onclick="cerrarModal()">CANCELAR</button>
+    <div id="form-poda-container" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <header><h1>INFORME DE PODA</h1></header>
+        <form id="form-poda">
+            <label>Circuito:</label>
+            <select id="poda-circuito">
+                <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
+                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
+                <option>GMC-L377 RS CAMPAMENTO</option>
+            </select>
+            <label>Zona:</label><input type="text" id="poda-zona">
+            <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
+            <p class="coords-text" id="coords-display">Inicio: -- | Fin: --</p>
+            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR PDF</button>
+        </form>
+    </div>
+
+    <div id="form-zonificacion-container" class="container" style="display:none;">
+        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <header><h1>ZONIFICACIÓN</h1></header>
+        <label>Circuito:</label>
+        <select id="zonif-circuito">
+            <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
+            <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
+            <option>GMC-L377 RS CAMPAMENTO</option>
+        </select>
+
+        <div id="map-zonif" style="height: 350px; border-radius: 10px; border: 2px solid #444;"></div>
+
+        <div class="grid-2">
+            <button type="button" class="btn-enviar" style="background:#4a5568; color:white;" onclick="abrirModalPunto('EXISTENTE')">
+                <i class="fas fa-circle"></i> + EXISTENTE
+            </button>
+            <button type="button" class="btn-enviar" style="background:#27ae60; color:white;" onclick="abrirModalPunto('PROYECTADA')">
+                <i class="fas fa-plus-circle"></i> + PROYECTADA
+            </button>
+        </div>
+
+        <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+            <button onclick="setModoDibujo('EXISTENTE')" style="background: #333; color: white; padding: 10px 15px; border: none; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold;">
+                ✏️ Línea Negra
+            </button>
+            <button onclick="setModoDibujo('PROYECTADA')" style="background: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold;">
+                ✏️ Línea Verde
+            </button>
+        </div>
+
+        <div id="lista-puntos" style="margin-top:15px; color:white;">
+            <h3>Levantamiento: <span id="contador-puntos">0</span> apoyos</h3>
+            <ul id="ul-puntos" style="padding:0; list-style:none; font-size: 0.9em; opacity: 0.8;"></ul>
+        </div>
+
+        <button type="button" class="btn-secundario" style="width:100%; margin-top:20px; background:#e67e22;" onclick="generarPowerPoint()">
+            <i class="fas fa-file-powerpoint"></i> GENERAR PPTX (PLANO + TABLAS)
+        </button>
+    </div>
+
+    <div id="modal-punto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; padding:20px; overflow-y:auto;">
+        <div style="background:#1a1a1a; padding:20px; border-radius:10px; max-width:500px; margin:auto;">
+            <h2 id="modal-titulo" style="color:white; border-bottom: 1px solid #333; padding-bottom:10px;">Detalle</h2>
+            <label style="color:white;">Num. Apoyo:</label><input type="text" id="p-apoyo" style="width:100%; margin-bottom:10px;">
+            <label style="color:white;">Tipo Poste:</label>
+            <select id="p-tipo-poste" style="width:100%; margin-bottom:10px;">
+                <option>PC 30FT</option><option>PC 35FT</option><option>PC 40FT</option><option>PC 45FT</option>
+                <option>PMA 30FT</option><option>PMA 35FT</option><option>PMA 40FT</option><option>PMA 45FT</option>
+                <option>PME 30FT</option><option>PME 35FT</option><option>PME 40FT</option><option>PME 45FT</option>
+            </select>
+            <label style="color:white;">Estructura:</label><input type="text" id="p-estructura" style="width:100%; margin-bottom:10px;">
+            <label style="color:white;">Trafo (kVA):</label>
+            <select id="p-trafo" style="width:100%; margin-bottom:10px;">
+                <option>N/A</option><option>15 kVA</option><option>25 kVA</option><option>37.5 kVA</option>
+                <option>50 kVA</option><option>75 kVA</option><option>100 kVA</option>
+            </select>
+            <div id="campos-existente-extra" style="display:none;">
+                <label style="color:white;">Cant. Clientes:</label><input type="number" id="p-clientes" style="width:100%; margin-bottom:10px;">
+                <label style="color:white;">Voltaje:</label><input type="text" id="p-voltaje" style="width:100%; margin-bottom:10px;">
+            </div>
+            <div class="grid-2">
+                <button type="button" class="btn-regresar" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn-enviar" onclick="guardarPunto()">Guardar</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    var mapZ;
-    var markerZ;
-    var puntosLevantados = [];
-    var tipoPuntoActual = "";
-    var modoDibujo = null;
-    var puntoOrigenParaLinea = null;
-
-    // CAPAS
-    const capaSatelite = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-        maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], crossOrigin: true
-    });
-    const capaCallesPlano = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, crossOrigin: true
-    });
-
-    function mostrarFormulario(tipo) {
-        document.getElementById('dashboard').style.display = 'none';
-        document.getElementById('form-zonificacion-container').style.display = 'block';
-        initMapZonif();
-    }
-
-    function initMapZonif() {
-        if (mapZ) mapZ.remove();
-        mapZ = L.map('map-zonif', { preferCanvas: true }).setView([14.65, -86.21], 16);
-        capaSatelite.addTo(mapZ);
-
-        markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                mapZ.setView([pos.coords.latitude, pos.coords.longitude], 18);
-                markerZ.setLatLng([pos.coords.latitude, pos.coords.longitude]);
-            });
-        }
-    }
-
-    function abrirModalPunto(tipo) {
-        tipoPuntoActual = tipo;
-        document.getElementById('modal-titulo').innerText = "Nuevo Punto: " + tipo;
-        document.getElementById('modal-punto').style.display = 'block';
-    }
-
-    function cerrarModal() { document.getElementById('modal-punto').style.display = 'none'; }
-
-    function guardarPunto() {
-        const coords = markerZ.getLatLng();
-        const punto = {
-            id: Date.now(),
-            tipoRed: tipoPuntoActual,
-            lat: coords.lat,
-            lng: coords.lng,
-            utm: latLngToUTM(coords.lat, coords.lng),
-            apoyo: document.getElementById('p-apoyo').value || "S/N",
-            poste: document.getElementById('p-tipo-poste').value,
-            estructura: document.getElementById('p-estructura').value || "S/D",
-            trafo: document.getElementById('p-trafo').value,
-            clientes: document.getElementById('p-clientes').value || "0",
-            voltaje: document.getElementById('p-voltaje').value || "13.8 kV"
-        };
-
-        puntosLevantados.push(punto);
-        dibujarPuntoEnMapa(punto);
-        document.getElementById('contador-puntos').innerText = puntosLevantados.length;
-        cerrarModal();
-    }
-
-    function dibujarPuntoEnMapa(p) {
-        let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
-        let etiqueta = `${p.clientes} C`;
-
-        // Reducido al 50% de escala
-        let svgHtml = p.trafo !== "N/A" ?
-            `<svg width="25" height="25" viewBox="0 0 100 100">
-                <polygon points="50,25 90,90 10,90" fill="${color}" stroke="white" stroke-width="5"/>
-                <text x="50" y="20" font-family="Arial" font-size="24" font-weight="bold" fill="${color}" text-anchor="middle" stroke="white" stroke-width="3" paint-order="stroke">${etiqueta}</text>
-            </svg>` :
-            `<svg width="25" height="25" viewBox="0 0 100 100">
-                <circle cx="50" cy="65" r="30" fill="${color}" stroke="white" stroke-width="6"/>
-                <text x="50" y="30" font-family="Arial" font-size="24" font-weight="bold" fill="${color}" text-anchor="middle" stroke="white" stroke-width="3" paint-order="stroke">${etiqueta}</text>
-            </svg>`;
-
-        const icon = L.divIcon({ className: 'svg-marker', html: svgHtml, iconSize: [25, 25], iconAnchor: [12, 12] });
-        let m = L.marker([p.lat, p.lng], { icon: icon }).addTo(mapZ);
-
-        m.on('click', () => {
-            if (!modoDibujo) return;
-            if (!puntoOrigenParaLinea) {
-                puntoOrigenParaLinea = p;
-                alert("Origen seleccionado: Poste " + p.apoyo + ". Toca el destino.");
-            } else {
-                trazarLineaManual(puntoOrigenParaLinea, p, modoDibujo);
-                puntoOrigenParaLinea = null;
-            }
-        });
-    }
-
-    function setModoDibujo(tipo) {
-        modoDibujo = tipo;
-        puntoOrigenParaLinea = null;
-        alert("MODO DIBUJO: " + tipo + "\nToca el primer poste y luego el segundo para unirlos.");
-    }
-
-    function trazarLineaManual(pA, pB, tipo) {
-        let esProy = (tipo === 'PROYECTADA');
-        let opciones = {
-            color: esProy ? '#27ae60' : '#000000',
-            weight: 3,
-            dashArray: esProy ? '8, 12' : null,
-            opacity: 0.8
-        };
-        L.polyline([[pA.lat, pA.lng], [pB.lat, pB.lng]], opciones).addTo(mapZ);
-    }
-
-    function latLngToUTM(lat, lng) {
-        const zone = 16; // Honduras Zona 16P
-        const sa = 6378137.0; const e = 0.081819191; const e2 = e * e;
-        const latRad = lat * Math.PI / 180; const lngRad = lng * Math.PI / 180;
-        const lngOrigin = (zone * 6 - 183) * Math.PI / 180;
-        const n = sa / Math.sqrt(1 - e2 * Math.sin(latRad) * Math.sin(latRad));
-        const t = Math.tan(latRad) * Math.tan(latRad);
-        const c = e2 * Math.cos(latRad) * Math.cos(latRad) / (1 - e2);
-        const a = (lngRad - lngOrigin) * Math.cos(latRad);
-        const m = sa * ( (1 - e2/4 - 3*e2*e2/64) * latRad - (3*e2/8 + 3*e2*e2/32) * Math.sin(2*latRad) + (15*e2*e2/256) * Math.sin(4*latRad) );
-        const x = 500000 + 0.9996 * n * (a + (1-t+c)*a*a*a/6 + (5-18*t+t*t+72*c-58*e2)*a*a*a*a*a/120);
-        const y = 0.9996 * (m + n * Math.tan(latRad) * (a*a/2 + (5-t+9*c+4*c*c)*a*a*a*a/24 + (61-58*t+t*t+600*c-330*e2)*a*a*a*a*a*a/720));
-        return `E: ${x.toFixed(0)} N: ${y.toFixed(0)}`;
-    }
-
-    async function generarPowerPoint() {
-        let pptx = new PptxGenJS();
-        const circ = document.getElementById('zonif-circuito').value || "SIN_NOMBRE";
-
-        mapZ.removeLayer(capaSatelite);
-        capaCallesPlano.addTo(mapZ);
-        await new Promise(r => setTimeout(r, 2500));
-
-        let slide1 = pptx.addSlide();
-        slide1.addText(`PLANO TÉCNICO DE ZONIFICACIÓN: ${circ}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
-
-        try {
-            const canvas = await html2canvas(document.getElementById('map-zonif'), { useCORS: true, scale: 2 });
-            slide1.addImage({ data: canvas.toDataURL('png'), x:0.2, y:0.8, w:9.6, h:4.8 });
-        } catch(e) { console.error(e); }
-
-        mapZ.removeLayer(capaCallesPlano);
-        capaSatelite.addTo(mapZ);
-
-        for (let i = 0; i < puntosLevantados.length; i += 4) {
-            let slide = pptx.addSlide();
-            slide.addText(`RESUMEN TÉCNICO - ${circ}`, { x:0.5, y:0.2, fontSize:14, bold:true });
-            let yPos = 0.6;
-            for (let j = i; j < i + 4 && j < puntosLevantados.length; j++) {
-                let p = puntosLevantados[j];
-                slide.addText(`Poste: ${p.apoyo} | UTM: ${p.utm} | GD: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`, { x:0.5, y:yPos, fontSize:9, bold:true });
-                let tableData = [
-                    ["Poste", "Estructura", "Trafo", "Clientes", "Voltaje"],
-                    [p.poste, p.estructura, p.trafo, p.clientes, p.voltaje]
-                ];
-                slide.addTable(tableData, { x:0.5, y:yPos + 0.2, w:9.0, fontSize:8, border:{pt:0.5, color:'CCCCCC'} });
-                yPos += 1.2;
-            }
-        }
-        pptx.writeFile({ fileName: `Zonificacion_${circ}.pptx` });
-    }
-</script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
