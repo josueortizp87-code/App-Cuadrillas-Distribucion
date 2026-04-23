@@ -29,7 +29,7 @@ function ocultarTodo() {
     ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 }
 
-// LÓGICA MAPAS BÁSICOS
+// MAPAS BÁSICOS
 function initMapInsp() {
     if (mapI) mapI.remove();
     mapI = L.map('map-insp').setView([14.65, -86.21], 15);
@@ -59,14 +59,17 @@ function marcarGPS(tipo) {
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
-// LÓGICA ZONIFICACIÓN (MAPA ESTILO PLANO)
+// ZONIFICACIÓN: CONFIGURACIÓN PARA CAPTURA DE PLANO
 function initMapZonif() {
     if (mapZ) mapZ.remove();
+
+    // preferCanvas: true es vital para que la captura sea fiel
     mapZ = L.map('map-zonif', { preferCanvas: true }).setView([14.65, -86.21], 16);
 
-    // Capa estilo PLANO (Solo líneas de calles, fondo claro)
+    // Usamos una capa que permite crossOrigin para que las calles NO salgan en blanco
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '©OpenStreetMap'
+        attribution: '©OpenStreetMap',
+        crossOrigin: true // PERMITE QUE HTML2CANVAS LEA LAS IMÁGENES
     }).addTo(mapZ);
 
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
@@ -91,9 +94,9 @@ function guardarPunto() {
     const punto = {
         tipoRed: tipoPuntoActual,
         lat: coords.lat, lng: coords.lng,
-        apoyo: document.getElementById('p-apoyo').value,
+        apoyo: document.getElementById('p-apoyo').value || "S/N",
         poste: document.getElementById('p-tipo-poste').value,
-        estructura: document.getElementById('p-estructura').value,
+        estructura: document.getElementById('p-estructura').value || "S/D",
         trafo: document.getElementById('p-trafo').value,
         clientes: document.getElementById('p-clientes').value || "0",
         voltaje: document.getElementById('p-voltaje').value || "N/A"
@@ -106,30 +109,47 @@ function guardarPunto() {
 
 function dibujarPuntoEnMapa(p) {
     let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
-    let html = (p.trafo !== "N/A")
-        ? `<div style="width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-bottom:16px solid ${color};"></div>`
-        : `<div style="width:12px; height:12px; background:${color}; border-radius:50%; border:1px solid white;"></div>`;
-
-    const icon = L.divIcon({ className: 'custom-icon', html: html, iconSize: [16, 16] });
-    L.marker([p.lat, p.lng], {icon: icon}).addTo(mapZ);
+    // Dibujamos usando CircleMarker para que sea parte del Canvas (mejor para el PPTX)
+    if (p.trafo !== "N/A") {
+        // Marcador especial para Trafo (Triángulo manual en Leaflet)
+        const trafoIcon = L.divIcon({
+            className: 'trafo-icon',
+            html: `<div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:16px solid ${color};"></div>`,
+            iconSize: [16, 16]
+        });
+        L.marker([p.lat, p.lng], { icon: trafoIcon }).addTo(mapZ);
+    } else {
+        L.circleMarker([p.lat, p.lng], {
+            radius: 7,
+            fillColor: color,
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(mapZ);
+    }
 }
 
-// GENERAR POWERPOINT (6 PUNTOS POR HOJA + PLANO)
+// GENERAR PPTX MEJORADO
 async function generarPowerPoint() {
     let pptx = new PptxGenJS();
     const circuito = document.getElementById('zonif-circuito').value;
 
-    // 1. Slide de Portada con Plano
+    // 1. Slide de Plano (Captura con Calles)
     let slidePortada = pptx.addSlide();
-    slidePortada.addText(`PLANO DE LEVANTAMIENTO - ${circuito}`, { x:0.5, y:0.4, fontSize:20, bold:true, color:'003366' });
+    slidePortada.addText(`PLANO DE LEVANTAMIENTO: ${circuito}`, { x:0.5, y:0.4, fontSize:20, bold:true, color:'003366' });
 
-    // Captura del mapa como imagen (Planos)
     try {
-        const canvas = await html2canvas(document.getElementById('map-zonif'));
+        // useCORS: true es el comando clave aquí
+        const canvas = await html2canvas(document.getElementById('map-zonif'), {
+            useCORS: true,
+            allowTaint: false,
+            logging: false
+        });
         const imgData = canvas.toDataURL('image/png');
         slidePortada.addImage({ data: imgData, x:0.5, y:1.0, w:9.0, h:4.5 });
     } catch(e) {
-        slidePortada.addText("No se pudo capturar el mapa", { x:1, y:2, color:'red' });
+        slidePortada.addText("Error al capturar calles. Verifique conexión.", { x:1, y:2, color:'CC0000' });
     }
 
     // 2. Slides de Datos (6 por página)
@@ -151,15 +171,15 @@ async function generarPowerPoint() {
 
             slide.addTable(tableData, {
                 x:0.5, y:yPos + 0.25, w:9.0, rowH:0.2,
-                fontSize:9, border:{pt:1, color:'CCCCCC'},
-                fill:'F9F9F9'
+                fontSize:9, border:{pt:0.5, color:'CCCCCC'},
+                fill:'FDFDFD'
             });
 
-            yPos += 0.85; // Espacio entre tablas
+            yPos += 0.85;
         }
     }
 
-    pptx.writeFile({ fileName: `Zonif_${circuito}.pptx` });
+    pptx.writeFile({ fileName: `Levantamiento_${circuito}.pptx` });
 }
 
 function previsualizar(input, idContenedor) {
