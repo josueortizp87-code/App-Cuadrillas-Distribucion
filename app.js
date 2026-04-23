@@ -59,17 +59,18 @@ function marcarGPS(tipo) {
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
-// ZONIFICACIÓN: CONFIGURACIÓN PARA CAPTURA DE PLANO
+// ZONIFICACIÓN: USANDO EL MAPA DE TRABAJO (SATELITAL)
 function initMapZonif() {
     if (mapZ) mapZ.remove();
 
-    // preferCanvas: true es vital para que la captura sea fiel
+    // preferCanvas es obligatorio para poder exportar
     mapZ = L.map('map-zonif', { preferCanvas: true }).setView([14.65, -86.21], 16);
 
-    // Usamos una capa que permite crossOrigin para que las calles NO salgan en blanco
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '©OpenStreetMap',
-        crossOrigin: true // PERMITE QUE HTML2CANVAS LEA LAS IMÁGENES
+    // Regresamos al mapa satelital/calles de Google que te gusta
+    L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3'],
+        crossOrigin: true // Intento de permiso para captura
     }).addTo(mapZ);
 
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
@@ -109,47 +110,54 @@ function guardarPunto() {
 
 function dibujarPuntoEnMapa(p) {
     let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
-    // Dibujamos usando CircleMarker para que sea parte del Canvas (mejor para el PPTX)
+
+    // Usamos marcadores de círculo nativos de Leaflet (se dibujan en el Canvas)
+    let marker;
     if (p.trafo !== "N/A") {
-        // Marcador especial para Trafo (Triángulo manual en Leaflet)
+        // Para transformadores usamos un marcador con icono de texto (triángulo)
         const trafoIcon = L.divIcon({
-            className: 'trafo-icon',
-            html: `<div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:16px solid ${color};"></div>`,
-            iconSize: [16, 16]
+            className: 'custom-div-icon',
+            html: `<div style="background-color:${color}; width:12px; height:12px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border:1px solid white;"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
         });
-        L.marker([p.lat, p.lng], { icon: trafoIcon }).addTo(mapZ);
+        marker = L.marker([p.lat, p.lng], { icon: trafoIcon });
     } else {
-        L.circleMarker([p.lat, p.lng], {
-            radius: 7,
+        marker = L.circleMarker([p.lat, p.lng], {
+            radius: 6,
             fillColor: color,
             color: "#ffffff",
             weight: 2,
             opacity: 1,
-            fillOpacity: 0.9
-        }).addTo(mapZ);
+            fillOpacity: 1
+        });
     }
+    marker.addTo(mapZ).bindPopup(`Apoyo: ${p.apoyo}`);
 }
 
-// GENERAR PPTX MEJORADO
+// GENERAR PPTX CON TRUCO DE CAPTURA
 async function generarPowerPoint() {
     let pptx = new PptxGenJS();
     const circuito = document.getElementById('zonif-circuito').value;
 
-    // 1. Slide de Plano (Captura con Calles)
+    // 1. Slide de Plano
     let slidePortada = pptx.addSlide();
     slidePortada.addText(`PLANO DE LEVANTAMIENTO: ${circuito}`, { x:0.5, y:0.4, fontSize:20, bold:true, color:'003366' });
 
+    // IMPORTANTE: html2canvas necesita correr con estas opciones para intentar capturar el mapa
     try {
-        // useCORS: true es el comando clave aquí
-        const canvas = await html2canvas(document.getElementById('map-zonif'), {
+        const mapContainer = document.getElementById('map-zonif');
+        const canvas = await html2canvas(mapContainer, {
             useCORS: true,
-            allowTaint: false,
-            logging: false
+            allowTaint: true,
+            backgroundColor: null,
+            scale: 2 // Mejora la resolución
         });
         const imgData = canvas.toDataURL('image/png');
         slidePortada.addImage({ data: imgData, x:0.5, y:1.0, w:9.0, h:4.5 });
     } catch(e) {
-        slidePortada.addText("Error al capturar calles. Verifique conexión.", { x:1, y:2, color:'CC0000' });
+        console.error(e);
+        slidePortada.addText("Nota: Si el mapa sale en blanco, tome una captura de pantalla manualmente y péguela aquí.", { x:1, y:2.5, fontSize:12, color:'999999' });
     }
 
     // 2. Slides de Datos (6 por página)
@@ -174,7 +182,6 @@ async function generarPowerPoint() {
                 fontSize:9, border:{pt:0.5, color:'CCCCCC'},
                 fill:'FDFDFD'
             });
-
             yPos += 0.85;
         }
     }
