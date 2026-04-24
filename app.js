@@ -11,7 +11,7 @@ window.onload = function() { initMapZonif(); };
 
 function initMapZonif() {
     if (mapZ) mapZ.remove();
-    mapZ = L.map('map-zonif', { preferCanvas: false }).setView([14.65, -86.21], 16);
+    mapZ = L.map('map-zonif', { preferCanvas: false, renderer: L.svg() }).setView([14.65, -86.21], 16);
     capaSatelite.addTo(mapZ);
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
 }
@@ -31,6 +31,8 @@ function cerrarModalPunto() {
     document.getElementById('modal-punto').style.display = 'none';
     document.getElementById('p-apoyo').value = "";
     document.getElementById('p-clientes').value = "0";
+    document.getElementById('p-estructura').value = "";
+    document.getElementById('p-voltaje').value = "";
 }
 
 function guardarPunto() {
@@ -53,15 +55,9 @@ function guardarPunto() {
 }
 
 function dibujarPuntoEnMapa(p) {
-    let claseIcono = (p.tipoRed === 'EXISTENTE') ? 'icono-poste-existente' : 'icono-poste-proyectado';
-    let htmlContent = `<div class="${claseIcono}"></div>`;
-
-    if (p.trafo !== "N/A") {
-        let colorTriangulo = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
-        htmlContent = `<div class="triangulo-proyectado" style="border-bottom-color: ${colorTriangulo}"></div>`;
-    }
-
-    const icon = L.divIcon({ html: htmlContent, className: '', iconSize: [10, 10] });
+    let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
+    let iconHtml = `<div style="background:${color}; width:12px; height:12px; border:2px solid white; border-radius:50%;"></div>`;
+    const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [12, 12] });
     const m = L.marker([p.lat, p.lng], { icon: icon }).addTo(mapZ);
 
     m.on('click', function() {
@@ -70,11 +66,7 @@ function dibujarPuntoEnMapa(p) {
             puntoOrigenParaLinea = p;
             m.bindTooltip("INICIO", {permanent: true}).openTooltip();
         } else {
-            const opciones = {
-                color: modoDibujo === 'PROYECTADA' ? '#27ae60' : '#000000',
-                weight: 3,
-                dashArray: modoDibujo === 'PROYECTADA' ? '5, 10' : null
-            };
+            const opciones = { color: modoDibujo === 'PROYECTADA' ? '#27ae60' : '#000000', weight: 4, dashArray: modoDibujo === 'PROYECTADA' ? '10, 15' : null };
             L.polyline([[puntoOrigenParaLinea.lat, puntoOrigenParaLinea.lng], [p.lat, p.lng]], opciones).addTo(mapZ);
             mapZ.eachLayer(l => { if(l.getTooltip) l.unbindTooltip(); });
             puntoOrigenParaLinea = null;
@@ -83,9 +75,18 @@ function dibujarPuntoEnMapa(p) {
 }
 
 function latLngToUTM(lat, lng) {
-    // Lógica simplificada de conversión UTM Zona 16N
-    const x = 500000 + (lng + 87) * 110000;
-    const y = lat * 111000;
+    const zone = 16;
+    const sa = 6378137.0; const e2 = 0.00669438;
+    const latRad = lat * Math.PI / 180;
+    const lonRad = lng * Math.PI / 180;
+    const lonOriginRad = ((zone * 6) - 183) * Math.PI / 180;
+    const n = sa / Math.sqrt(1 - e2 * Math.sin(latRad) * Math.sin(latRad));
+    const t = Math.tan(latRad) * Math.tan(latRad);
+    const c = e2 * Math.cos(latRad) * Math.cos(latRad) / (1 - e2);
+    const a = (lonRad - lonOriginRad) * Math.cos(latRad);
+    const m = sa * ((1 - e2/4 - 3*e2*e2/64) * latRad - (3*e2/8 + 3*e2*e2/32) * Math.sin(2*latRad) + (15*e2*e2/256) * Math.sin(4*latRad));
+    const x = 500000.0 + 0.9996 * n * (a + (1-t+c)*a*a*a/6 + (5-18*t+t*t+72*c)*a*a*a*a*a/120);
+    const y = 0.9996 * (m + n * Math.tan(latRad) * (a*a/2 + (5-t+9*c+4*c*c)*a*a*a*a/24));
     return `E:${x.toFixed(0)} N:${y.toFixed(0)}`;
 }
 
@@ -96,40 +97,32 @@ async function generarPowerPoint() {
 
     mapZ.removeLayer(capaSatelite);
     capaCallesPlano.addTo(mapZ);
-
-    // Esperar a que el mapa cargue las líneas y el plano de calles
-    await new Promise(r => setTimeout(r, 4500));
-
-    const canvas = await html2canvas(document.getElementById('map-zonif'), {
-        useCORS: true,
-        scale: 2,
-        onclone: (clonedDoc) => {
-            const svgElements = clonedDoc.getElementsByTagName('svg');
-            for (let svg of svgElements) { svg.style.display = 'block'; }
-        }
-    });
+    await new Promise(r => setTimeout(r, 4000));
 
     let slidePortada = pptx.addSlide();
     slidePortada.addText(`PLANO TÉCNICO: ${circuito}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
-    slidePortada.addImage({ data: canvas.toDataURL('image/png'), x:0.5, y:1.0, w:9, h:4.8 });
+    slidePortada.addText(`Zona: ${zona}`, { x:0.5, y:0.6, fontSize:14, color:'555555' });
 
-    // Tablas de 20 filas por hoja
+    const canvas = await html2canvas(document.getElementById('map-zonif'), { useCORS: true, scale: 2 });
+    slidePortada.addImage({ data: canvas.toDataURL('image/png'), x:0.5, y:1.2, w:9, h:4.5 });
+
     for (let i = 0; i < puntosLevantados.length; i += 20) {
         let slide = pptx.addSlide();
+        slide.addText(`RESUMEN DE APOYOS - ${circuito} (${zona})`, { x:0.5, y:0.2, fontSize:10, bold:true });
         let filasTabla = [[
             { text: "Apoyo", options: { fill: "003366", color: "FFFFFF", bold: true } },
             { text: "UTM (E,N)", options: { fill: "003366", color: "FFFFFF", bold: true } },
             { text: "Poste/Estr.", options: { fill: "003366", color: "FFFFFF", bold: true } },
             { text: "Trafo", options: { fill: "003366", color: "FFFFFF", bold: true } },
+            { text: "Voltaje", options: { fill: "003366", color: "FFFFFF", bold: true } },
             { text: "Cli.", options: { fill: "003366", color: "FFFFFF", bold: true } }
         ]];
         for (let j = i; j < i + 20 && j < puntosLevantados.length; j++) {
             let p = puntosLevantados[j];
-            filasTabla.push([p.apoyo, p.utm, `${p.poste}/${p.estructura}`, p.trafo, p.clientes]);
+            filasTabla.push([p.apoyo, p.utm, `${p.poste} / ${p.estructura}`, p.trafo, p.voltaje, p.clientes]);
         }
-        slide.addTable(filasTabla, { x: 0.3, y: 0.5, w: 9.4, fontSize: 8 });
+        slide.addTable(filasTabla, { x: 0.3, y: 0.5, w: 9.4, fontSize: 7, border: { type: 'solid', color: 'CCCCCC' }, align: 'center' });
     }
-
     pptx.writeFile({ fileName: `Zonificacion_${circuito}.pptx` });
     mapZ.removeLayer(capaCallesPlano);
     capaSatelite.addTo(mapZ);
