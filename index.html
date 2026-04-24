@@ -1,99 +1,62 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENEE - Zonificación de Red</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</head>
-<body>
+:root {
+    --primary: #2d3436;
+    --accent: #0984e3;
+    --text: #dfe6e9;
+}
 
-    <div id="form-zonificacion-container" class="container">
-        <header>
-            <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
-                 alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-            <h1>SECTOR JUTICALPA - ZONIFICACIÓN</h1>
-            <p>Desarrollador - Josué Ortiz</p>
-        </header>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1e272e;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
 
-        <label>Circuito:</label>
-        <select id="zonif-circuito">
-            <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
-            <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
-            <option>GMC-L377 RS CAMPAMENTO</option>
-        </select>
-        <div class="input-group">
-            <label>Zona de Levantamiento:</label>
-            <input type="text" id="zonif-area" placeholder="Ej: Colonia / Barrio" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-        </div>
+.container {
+    background: var(--primary);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 500px;
+}
 
-        <div id="map-zonif" style="height: 400px; border-radius: 10px; border: 2px solid #444; margin-top: 10px;"></div>
+h2, h3 { color: white; text-align: center; margin-top: 0; }
 
-        <div class="grid-2" style="margin-top: 15px;">
-            <button type="button" class="btn-enviar" style="background:#4a5568; color:white; margin-top:0;" onclick="abrirModalPunto('EXISTENTE')">
-                <i class="fas fa-circle"></i> + EXISTENTE
-            </button>
-            <button type="button" class="btn-enviar" style="background:#27ae60; color:white; margin-top:0;" onclick="abrirModalPunto('PROYECTADA')">
-                <i class="fas fa-plus-circle"></i> + PROYECTADA
-            </button>
-        </div>
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; color: #b2bec3; margin-bottom: 5px; font-size: 0.9em; }
 
-        <div class="grid-2" style="margin-top: 10px;">
-            <button type="button" class="btn-secundario" style="margin-top:0; border-color:#fff; color:#fff;" onclick="setModoDibujo('EXISTENTE')">
-                <i class="fas fa-horizontal-rule"></i> LÍNEA NEGRA (EXIST)
-            </button>
-            <button type="button" class="btn-secundario" style="margin-top:0; border-color:#27ae60; color:#27ae60;" onclick="setModoDibujo('PROYECTADA')">
-                <i class="fas fa-ellipsis-h"></i> LÍNEA VERDE (PROY)
-            </button>
-        </div>
+.input-form {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+}
 
-        <div id="lista-puntos" style="margin-top:15px; color:white;">
-            <h3>Apoyos levantados: <span id="contador-puntos">0</span></h3>
-            <ul id="ul-puntos" style="padding:0; list-style:none; font-size: 0.8em; opacity: 0.7;"></ul>
-        </div>
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
-        <button class="btn-enviar" style="background: #2980b9; margin-top: 20px;" onclick="generarPowerPoint()">
-            <i class="fas fa-file-powerpoint"></i> GENERAR PPTX
-        </button>
-    </div>
+.btn-enviar, .btn-secundario {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
 
-    <div id="modal-punto" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000;">
-        <div style="background:#2d3436; color:white; width:90%; max-width:400px; margin:20px auto; padding:20px; border-radius:10px;">
-            <h3>Datos del Apoyo</h3>
-            <label>N° Apoyo:</label><input type="text" id="p-apoyo" class="input-form">
-            <label>Tipo Poste:</label>
-            <select id="p-tipo-poste" class="input-form">
-              <option>PC 30FT</option><option>PC 35FT</option><option>PC 40FT</option><option>PC 45FT</option>
-              <option>PMA 30FT</option><option>PMA 35FT</option><option>PMA 40FT</option><option>PMA 45FT</option>
-              <option>PME 30FT</option><option>PME 35FT</option><option>PME 40FT</option><option>PME 45FT</option>
-          </select>
-            <label>Estructura:</label><input type="text" id="p-estructura" class="input-form" placeholder="Ej: A-I-1">
-            <label>Transformador:</label>
-            <select id="p-trafo" class="input-form">
-                <option value="N/A">Sin Trafo</option>
-                <option value="15kVA">15 kVA</option>
-                <option value="25kVA">25 kVA</option>
-                <option value="37.5kVA">37.5 kVA</option>
-                <option value="50kVA">50 kVA</option>
-                <option value="75kVA">75 kVA</option>
-                <option value="100kVA">100 kVA</option>
-            </select>
-            <label>Clientes:</label><input type="number" id="p-clientes" class="input-form" value="0">
-            <label>Voltaje:</label><input type="text" id="p-voltaje" class="input-form" placeholder="Ej: 240 V">
-            <div class="grid-2">
-                <button type="button" class="btn-enviar" onclick="guardarPunto()">GUARDAR</button>
-                <button type="button" class="btn-cancelar" style="background:#e74c3c; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;" onclick="cerrarModalPunto()">CANCELAR</button>
-            </div>
-        </div>
-    </div>
+.btn-secundario {
+    background: transparent;
+    border: 2px solid;
+}
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+.btn-enviar:hover { opacity: 0.8; transform: scale(0.98); }
+
+.modal label { font-size: 0.8em; color: #b2bec3; }

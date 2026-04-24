@@ -12,7 +12,6 @@ window.onload = function() { initMapZonif(); };
 
 function initMapZonif() {
     if (mapZ) mapZ.remove();
-    // Forzamos el uso de SVG para mejorar la captura de líneas
     mapZ = L.map('map-zonif', { preferCanvas: false, renderer: L.svg() }).setView([14.65, -86.21], 16);
     capaSatelite.addTo(mapZ);
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
@@ -27,7 +26,7 @@ function setModoDibujo(tipo) {
 function abrirModalPunto(tipo) {
     tipoPuntoActual = tipo;
     modoDibujo = null;
-    document.getElementById('modal-punto').style.display = 'block';
+    document.getElementById('modal-punto').style.display = 'flex';
 }
 
 function cerrarModalPunto() {
@@ -35,6 +34,7 @@ function cerrarModalPunto() {
     document.getElementById('p-apoyo').value = "";
     document.getElementById('p-clientes').value = "0";
     document.getElementById('p-estructura').value = "";
+    document.getElementById('p-voltaje').value = "";
 }
 
 function guardarPunto() {
@@ -93,7 +93,7 @@ function trazarLinea(pA, pB, tipo) {
         color: esProy ? '#27ae60' : '#000000',
         weight: 4,
         dashArray: esProy ? '10, 15' : null,
-        opacity: 1.0 // Opacidad total para mejor captura
+        opacity: 1.0
     };
     L.polyline([[pA.lat, pA.lng], [pB.lat, pB.lng]], opciones).addTo(mapZ);
 }
@@ -119,61 +119,52 @@ async function generarPowerPoint() {
     const circuito = document.getElementById('zonif-circuito').value;
     const zona = document.getElementById('zonif-area').value || "Sector Sin Nombre";
 
-    // Cambiamos a capa de calles para el reporte
     mapZ.removeLayer(capaSatelite);
     capaCallesPlano.addTo(mapZ);
 
-    // Tiempo de espera para que Leaflet termine de redibujar todo
     await new Promise(r => setTimeout(r, 4000));
 
     let slidePortada = pptx.addSlide();
     slidePortada.addText(`PLANO TÉCNICO: ${circuito}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
     slidePortada.addText(`Zona: ${zona}`, { x:0.5, y:0.6, fontSize:14, color:'555555' });
 
-    // Captura del mapa incluyendo polylines
-    const canvas = await html2canvas(document.getElementById('map-zonif'), {
-        useCORS: true,
-        scale: 2,
-        allowTaint: false,
-        backgroundColor: null
-    });
-
+    const canvas = await html2canvas(document.getElementById('map-zonif'), { useCORS: true, scale: 2 });
     slidePortada.addImage({ data: canvas.toDataURL('image/png'), x:0.5, y:1.2, w:9, h:4.5 });
 
-    // Tablas de 6 apoyos
-    for (let i = 0; i < puntosLevantados.length; i += 6) {
+    // --- TABLA DE APOYOS (Máximo 20 por hoja) ---
+    for (let i = 0; i < puntosLevantados.length; i += 20) {
         let slide = pptx.addSlide();
-        slide.addText(`RESUMEN DE APOYOS - ${circuito} (${zona})`, { x:0.5, y:0.3, fontSize:12, bold:true });
+        slide.addText(`RESUMEN DE APOYOS - ${circuito} (${zona})`, { x:0.5, y:0.2, fontSize:10, bold:true });
 
         let filasTabla = [
             [
                 { text: "Apoyo", options: { bold: true, fill: "003366", color: "FFFFFF" } },
                 { text: "Tipo Red", options: { bold: true, fill: "003366", color: "FFFFFF" } },
-                { text: "UTM", options: { bold: true, fill: "003366", color: "FFFFFF" } },
-                { text: "GD (Lat, Lng)", options: { bold: true, fill: "003366", color: "FFFFFF" } },
-                { text: "Poste/Estr.", options: { bold: true, fill: "003366", color: "FFFFFF" } },
-                { text: "Clientes", options: { bold: true, fill: "003366", color: "FFFFFF" } }
+                { text: "UTM (E,N)", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Poste / Estr.", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Trafo", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Voltaje", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Cli.", options: { bold: true, fill: "003366", color: "FFFFFF" } }
             ]
         ];
 
-        for (let j = i; j < i + 6 && j < puntosLevantados.length; j++) {
+        for (let j = i; j < i + 20 && j < puntosLevantados.length; j++) {
             let p = puntosLevantados[j];
             filasTabla.push([
                 p.apoyo,
                 { text: p.tipoRed, options: { color: p.tipoRed === 'PROYECTADA' ? '27ae60' : '000000' } },
                 p.utm,
-                `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`,
                 `${p.poste} / ${p.estructura}`,
+                p.trafo,
+                p.voltaje,
                 p.clientes
             ]);
         }
 
-        slide.addTable(filasTabla, { x: 0.5, y: 0.8, w: 9, fontSize: 8, border: { type: 'solid', color: 'CCCCCC' }, align: 'center' });
+        slide.addTable(filasTabla, { x: 0.3, y: 0.5, w: 9.4, fontSize: 7, border: { type: 'solid', color: 'CCCCCC' }, align: 'center' });
     }
 
     pptx.writeFile({ fileName: `Zonificacion_${circuito}_${zona}.pptx` });
-
-    // Volver a la capa satelital
     mapZ.removeLayer(capaCallesPlano);
     capaSatelite.addTo(mapZ);
 }
