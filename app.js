@@ -12,7 +12,8 @@ window.onload = function() { initMapZonif(); };
 
 function initMapZonif() {
     if (mapZ) mapZ.remove();
-    mapZ = L.map('map-zonif', { preferCanvas: false }).setView([14.65, -86.21], 16);
+    // Forzamos el uso de SVG para mejorar la captura de líneas
+    mapZ = L.map('map-zonif', { preferCanvas: false, renderer: L.svg() }).setView([14.65, -86.21], 16);
     capaSatelite.addTo(mapZ);
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
 }
@@ -20,7 +21,7 @@ function initMapZonif() {
 function setModoDibujo(tipo) {
     modoDibujo = tipo;
     puntoOrigenParaLinea = null;
-    alert("MODO LÍNEA " + tipo + " ACTIVO\nToque el poste inicial y luego el final.");
+    alert("MODO LÍNEA " + tipo + " ACTIVO\nSeleccione el poste inicial y luego el final.");
 }
 
 function abrirModalPunto(tipo) {
@@ -92,7 +93,7 @@ function trazarLinea(pA, pB, tipo) {
         color: esProy ? '#27ae60' : '#000000',
         weight: 4,
         dashArray: esProy ? '10, 15' : null,
-        opacity: 0.9
+        opacity: 1.0 // Opacidad total para mejor captura
     };
     L.polyline([[pA.lat, pA.lng], [pB.lat, pB.lng]], opciones).addTo(mapZ);
 }
@@ -118,17 +119,28 @@ async function generarPowerPoint() {
     const circuito = document.getElementById('zonif-circuito').value;
     const zona = document.getElementById('zonif-area').value || "Sector Sin Nombre";
 
+    // Cambiamos a capa de calles para el reporte
     mapZ.removeLayer(capaSatelite);
     capaCallesPlano.addTo(mapZ);
-    await new Promise(r => setTimeout(r, 3000));
+
+    // Tiempo de espera para que Leaflet termine de redibujar todo
+    await new Promise(r => setTimeout(r, 4000));
 
     let slidePortada = pptx.addSlide();
     slidePortada.addText(`PLANO TÉCNICO: ${circuito}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
     slidePortada.addText(`Zona: ${zona}`, { x:0.5, y:0.6, fontSize:14, color:'555555' });
 
-    const canvas = await html2canvas(document.getElementById('map-zonif'), { useCORS: true, scale: 2 });
+    // Captura del mapa incluyendo polylines
+    const canvas = await html2canvas(document.getElementById('map-zonif'), {
+        useCORS: true,
+        scale: 2,
+        allowTaint: false,
+        backgroundColor: null
+    });
+
     slidePortada.addImage({ data: canvas.toDataURL('image/png'), x:0.5, y:1.2, w:9, h:4.5 });
 
+    // Tablas de 6 apoyos
     for (let i = 0; i < puntosLevantados.length; i += 6) {
         let slide = pptx.addSlide();
         slide.addText(`RESUMEN DE APOYOS - ${circuito} (${zona})`, { x:0.5, y:0.3, fontSize:12, bold:true });
@@ -160,6 +172,8 @@ async function generarPowerPoint() {
     }
 
     pptx.writeFile({ fileName: `Zonificacion_${circuito}_${zona}.pptx` });
+
+    // Volver a la capa satelital
     mapZ.removeLayer(capaCallesPlano);
     capaSatelite.addTo(mapZ);
 }
