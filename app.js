@@ -17,17 +17,23 @@ function initMapZonif() {
     markerZ = L.marker([14.65, -86.21], {draggable: true}).addTo(mapZ);
 }
 
-// MODO DIBUJO DE LÍNEAS
 function setModoDibujo(tipo) {
     modoDibujo = tipo;
     puntoOrigenParaLinea = null;
-    alert("MODO LÍNEA " + tipo + " ACTIVO\n1. Toque el poste de origen\n2. Toque el poste de destino");
+    alert("MODO LÍNEA " + tipo + " ACTIVO\nToque el poste inicial y luego el final.");
 }
 
 function abrirModalPunto(tipo) {
     tipoPuntoActual = tipo;
-    modoDibujo = null; // Desactivar dibujo de líneas al crear puntos
+    modoDibujo = null;
     document.getElementById('modal-punto').style.display = 'block';
+}
+
+function cerrarModalPunto() {
+    document.getElementById('modal-punto').style.display = 'none';
+    document.getElementById('p-apoyo').value = "";
+    document.getElementById('p-clientes').value = "0";
+    document.getElementById('p-estructura').value = "";
 }
 
 function guardarPunto() {
@@ -47,14 +53,13 @@ function guardarPunto() {
     puntosLevantados.push(punto);
     dibujarPuntoEnMapa(punto);
     document.getElementById('contador-puntos').innerText = puntosLevantados.length;
-    document.getElementById('modal-punto').style.display = 'none';
+    cerrarModalPunto();
 }
 
 function dibujarPuntoEnMapa(p) {
     let color = (p.tipoRed === 'EXISTENTE') ? '#000000' : '#27ae60';
     let etiqueta = p.clientes + " C";
 
-    // Icono con etiqueta de clientes
     let svgHtml = p.trafo !== "N/A" ?
         `<svg width="40" height="40" viewBox="0 0 100 100">
             <polygon points="50,25 90,85 10,85" fill="${color}" stroke="white" stroke-width="5"/>
@@ -68,12 +73,11 @@ function dibujarPuntoEnMapa(p) {
     const icon = L.divIcon({ className: 'svg-marker', html: svgHtml, iconSize: [40, 40], iconAnchor: [20, 20] });
     const m = L.marker([p.lat, p.lng], { icon: icon }).addTo(mapZ);
 
-    // Evento para unir líneas
     m.on('click', function() {
         if (!modoDibujo) return;
         if (!puntoOrigenParaLinea) {
             puntoOrigenParaLinea = p;
-            m.bindTooltip("ORIGEN", {permanent: true}).openTooltip();
+            m.bindTooltip("INICIO", {permanent: true}).openTooltip();
         } else {
             trazarLinea(puntoOrigenParaLinea, p, modoDibujo);
             mapZ.eachLayer(l => { if(l.getTooltip) l.unbindTooltip(); });
@@ -88,12 +92,11 @@ function trazarLinea(pA, pB, tipo) {
         color: esProy ? '#27ae60' : '#000000',
         weight: 4,
         dashArray: esProy ? '10, 15' : null,
-        opacity: 0.8
+        opacity: 0.9
     };
     L.polyline([[pA.lat, pA.lng], [pB.lat, pB.lng]], opciones).addTo(mapZ);
 }
 
-// CONVERSOR UTM BÁSICO (ZONA 16 HONDURAS)
 function latLngToUTM(lat, lng) {
     const zone = 16;
     const sa = 6378137.0; const e2 = 0.00669438;
@@ -107,36 +110,56 @@ function latLngToUTM(lat, lng) {
     const m = sa * ((1 - e2/4 - 3*e2*e2/64) * latRad - (3*e2/8 + 3*e2*e2/32) * Math.sin(2*latRad) + (15*e2*e2/256) * Math.sin(4*latRad));
     const x = 500000.0 + 0.9996 * n * (a + (1-t+c)*a*a*a/6 + (5-18*t+t*t+72*c)*a*a*a*a*a/120);
     const y = 0.9996 * (m + n * Math.tan(latRad) * (a*a/2 + (5-t+9*c+4*c*c)*a*a*a*a/24));
-    return `E: ${x.toFixed(0)}, N: ${y.toFixed(0)}`;
+    return `E:${x.toFixed(0)} N:${y.toFixed(0)}`;
 }
 
 async function generarPowerPoint() {
     let pptx = new PptxGenJS();
     const circuito = document.getElementById('zonif-circuito').value;
+    const zona = document.getElementById('zonif-area').value || "Sector Sin Nombre";
 
     mapZ.removeLayer(capaSatelite);
     capaCallesPlano.addTo(mapZ);
-    await new Promise(r => setTimeout(r, 2500));
+    await new Promise(r => setTimeout(r, 3000));
 
     let slidePortada = pptx.addSlide();
-    slidePortada.addText(`PLANO DE ZONIFICACIÓN - ${circuito}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
+    slidePortada.addText(`PLANO TÉCNICO: ${circuito}`, { x:0.5, y:0.3, fontSize:18, bold:true, color:'003366' });
+    slidePortada.addText(`Zona: ${zona}`, { x:0.5, y:0.6, fontSize:14, color:'555555' });
 
     const canvas = await html2canvas(document.getElementById('map-zonif'), { useCORS: true, scale: 2 });
-    slidePortada.addImage({ data: canvas.toDataURL('image/png'), x:0.2, y:0.8, w:9.6, h:4.8 });
+    slidePortada.addImage({ data: canvas.toDataURL('image/png'), x:0.5, y:1.2, w:9, h:4.5 });
 
+    for (let i = 0; i < puntosLevantados.length; i += 6) {
+        let slide = pptx.addSlide();
+        slide.addText(`RESUMEN DE APOYOS - ${circuito} (${zona})`, { x:0.5, y:0.3, fontSize:12, bold:true });
+
+        let filasTabla = [
+            [
+                { text: "Apoyo", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Tipo Red", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "UTM", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "GD (Lat, Lng)", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Poste/Estr.", options: { bold: true, fill: "003366", color: "FFFFFF" } },
+                { text: "Clientes", options: { bold: true, fill: "003366", color: "FFFFFF" } }
+            ]
+        ];
+
+        for (let j = i; j < i + 6 && j < puntosLevantados.length; j++) {
+            let p = puntosLevantados[j];
+            filasTabla.push([
+                p.apoyo,
+                { text: p.tipoRed, options: { color: p.tipoRed === 'PROYECTADA' ? '27ae60' : '000000' } },
+                p.utm,
+                `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`,
+                `${p.poste} / ${p.estructura}`,
+                p.clientes
+            ]);
+        }
+
+        slide.addTable(filasTabla, { x: 0.5, y: 0.8, w: 9, fontSize: 8, border: { type: 'solid', color: 'CCCCCC' }, align: 'center' });
+    }
+
+    pptx.writeFile({ fileName: `Zonificacion_${circuito}_${zona}.pptx` });
     mapZ.removeLayer(capaCallesPlano);
     capaSatelite.addTo(mapZ);
-
-    for (let i = 0; i < puntosLevantados.length; i += 4) {
-        let slide = pptx.addSlide();
-        slide.addText(`RESUMEN TÉCNICO - ${circuito}`, { x:0.5, y:0.2, fontSize:14, bold:true });
-        let yPos = 0.6;
-        for (let j = i; j < i + 4 && j < puntosLevantados.length; j++) {
-            let p = puntosLevantados[j];
-            slide.addText(`Apoyo: ${p.apoyo} | UTM: ${p.utm} | GD: ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`, { x:0.5, y:yPos, fontSize:9, bold:true });
-            slide.addTable([["Poste","Estructura","Trafo","Clientes","Voltaje"],[p.poste, p.estructura, p.trafo, p.clientes, p.voltaje]], { x:0.5, y:yPos+0.2, w:9, fontSize:8 });
-            yPos += 1.2;
-        }
-    }
-    pptx.writeFile({ fileName: `Zonificacion_${circuito}.pptx` });
 }
