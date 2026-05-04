@@ -1,141 +1,211 @@
+/* Variables de color de la ENEE */
 :root {
-    --primary: #1c2833;
-    --accent: #0984e3;
-    --success: #27ae60;
-    --text-light: #ecf0f1;
+    --bg: #121212;
+    --card: #1e1e1e;
+    --accent: #f1c40f;
+    --text: #ffffff;
+    --border: #333;
 }
 
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background-color: #111;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
     margin: 0;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
+    padding: 15px;
 }
 
 .container {
-    background: var(--primary);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-    width: 100%;
-    max-width: 550px;
+    max-width: 500px;
+    margin: auto;
 }
 
-.logo-central {
-    display: block;
-    margin: 0 auto 15px;
-    height: 70px;
-    background: white;
-    padding: 12px;
+header {
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 15px;
+}
+
+header h1 {
+    font-size: 1.2rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+/* Tarjetas del Menú Principal */
+.grid-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.card {
+    background: var(--card);
+    padding: 25px 10px;
     border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+    text-align: center;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.titulo-blanco {
-    color: white;
-    font-size: 1.4rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-}
+.card:active { transform: scale(0.95); }
 
-.label-resaltado {
+.card i {
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 10px;
     display: block;
-    color: #0984e3;
+}
+
+/* Formularios y Etiquetas */
+label {
+    display: block;
+    margin-top: 15px;
+    color: var(--accent);
+    font-size: 0.75rem;
     font-weight: bold;
-    margin-bottom: 8px;
-    font-size: 0.95em;
     text-transform: uppercase;
 }
 
-.select-profesional, .input-profesional {
+input, select, textarea {
     width: 100%;
     padding: 12px;
-    background: #2c3e50;
-    border: 2px solid #34495e;
-    border-radius: 10px;
+    background: #252525;
+    border: 1px solid var(--border);
     color: white;
-    font-size: 1em;
-    margin-bottom: 15px;
-    transition: 0.3s;
+    border-radius: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
 }
 
-.select-profesional:focus, .input-profesional:focus {
-    border-color: #0984e3;
-    outline: none;
-    box-shadow: 0 0 10px rgba(9, 132, 227, 0.3);
-}
-
-.mapa-borde {
-    height: 400px;
-    border-radius: 15px;
-    border: 3px solid #0984e3;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.btn-accion {
-    padding: 14px;
+.input-readonly {
+    background: #000;
+    color: var(--accent);
     border: none;
-    border-radius: 10px;
-    color: white;
     font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+}
+
+/* Botones de Prioridad (ALTA, MEDIA, BAJA) */
+.selector-botones {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 8px;
 }
 
-.btn-linea {
-    padding: 10px;
-    background: transparent;
-    border: 2px solid;
-    border-radius: 10px;
+.btn-prioridad {
+    flex: 1; /* Esto hace que los 3 botones midan lo mismo */
+    padding: 12px;
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.85em;
     font-weight: bold;
+    font-size: 0.8rem;
+    transition: 0.2s;
 }
 
-.btn-pptx {
+/* Cuadrículas (Grids) */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
+
+/* Estilo para los inputs de archivos (fotos) */
+.grid-3 input[type="file"] {
+    font-size: 9px;
+    background: #1e1e1e;
+    padding: 8px 5px;
+}
+
+.foto-box {
+    background: #1e1e1e;
+    border: 1px dashed #555;
+    padding: 5px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.foto-box span {
+    font-size: 10px;
+    display: block;
+    margin-bottom: 4px;
+    color: #888;
+}
+
+/* Botones de Acción */
+.btn-regresar {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.btn-enviar {
+    background: var(--accent);
+    color: black;
     width: 100%;
     padding: 15px;
-    background: #e67e22;
-    color: white;
     border: none;
-    border-radius: 12px;
-    font-size: 1.1em;
+    border-radius: 10px;
     font-weight: bold;
     margin-top: 25px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
+    font-size: 1rem;
 }
 
-/* Modal */
-.modal {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 2000;
+.btn-secundario {
+    background: #333;
+    color: var(--accent);
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
 }
 
-.modal-content {
-    background: #2c3e50;
-    width: 90%; max-width: 450px;
-    padding: 25px;
-    border-radius: 15px;
-    color: white;
+/* Mapa y GPS */
+.coords-text {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 8px;
+    text-align: center;
+    background: #000;
+    padding: 5px;
+    border-radius: 4px;
+}
+/* Contenedor de la foto y su miniatura */
+.foto-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: #1e1e1e;
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #333;
 }
 
-.input-form {
-    width: 100%; padding: 10px; margin: 8px 0 15px;
-    border-radius: 5px; border: 1px solid #555; background: white;
+/* El recuadro donde aparecerá la imagen */
+.preview-box {
+    width: 100%;
+    height: 60px; /* Altura de la miniatura */
+    background: #121212;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px dashed #444;
+}
+
+/* Ajuste para que el texto del input no estorbe */
+input[type="file"] {
+    font-size: 10px;
 }
