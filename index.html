@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENEE - Gestión de Distribución</title>
+    <title>ENEE - Poda Comunitaria</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,122 +11,16 @@
 </head>
 <body>
 
-    <div id="dashboard" class="container">
+    <!-- Acceso Directo a Poda Comunitaria -->
+    <div id="form-poda-container" class="container">
         <header>
-          <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
-         alt="ENEE"
-         style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-            <h1>SECTOR JUTICALPA - GESTIÓN DE LA RED</h1>
-            <p>Desarrollador - Josué Ortiz</p>
+            <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
+                 alt="ENEE"
+                 style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+            <h1>INFORME DE PODA COMUNITARIA</h1>
+            <p>Sector Juticalpa - Desarrollador Josué Ortiz</p>
         </header>
-        <div class="grid-menu">
-            <div class="card" onclick="mostrarSubmenu()">
-                <i class="fas fa-tools"></i>
-                <span>Mantenimiento</span>
-            </div>
-        </div>
-    </div>
 
-    <div id="submenu-mantenimiento" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="volverAlDashboard()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <header><h1>MANTENIMIENTO</h1></header>
-        <div class="grid-menu">
-            <div class="card" onclick="mostrarFormulario('inspeccion')">
-                <i class="fas fa-search"></i>
-                <span>Inspección</span>
-            </div>
-            <div class="card" onclick="mostrarFormulario('poda')">
-                <i class="fas fa-leaf"></i>
-                <span>Poda Comunitaria</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="form-inspeccion-container" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <h2>REGISTRO DE INSPECCIÓN</h2>
-        <form id="form-insp-detalle">
-            <label>ID Inspección:</label>
-            <input type="text" id="id-insp" readonly class="input-readonly">
-
-            <label>Circuito:</label>
-            <select id="circ-insp">
-                <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
-                <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
-                <option>GMC-L377 RS CAMPAMENTO</option>
-            </select>
-
-            <label>Nombre de Inspección:</label>
-            <input type="text" id="nombre-insp" placeholder="Ej: Inspección Poste 45-JUT">
-
-            <label>Fecha:</label>
-            <input type="date" id="fecha-insp">
-
-            <label>Tipo de Inspección:</label>
-            <select id="tipo-insp">
-                <option>DESPEJE</option><option>CAMARA ACÚSTICA</option>
-                <option>PROYECTO</option><option>MEJORA DE RED</option>
-            </select>
-
-            <label>Actividad:</label>
-            <select id="actividad-insp">
-                <option>CONTROL DE VEGETACIÓN</option><option>POSTES</option>
-                <option>CONDUCTORES</option><option>TRANSFORMADORES</option>
-                <option>CRUCETES</option><option>AISLAMIENTO</option>
-                <option>EQUIPO DE PROTECCIÓN</option>
-            </select>
-
-            <label>Prioridad:</label>
-            <div class="selector-botones" id="prioridad-insp">
-                <button type="button" class="btn-prioridad" onclick="seleccionarPrioridad(this, 'ALTA')">ALTA</button>
-                <button type="button" class="btn-prioridad" onclick="seleccionarPrioridad(this, 'MEDIA')">MEDIA</button>
-                <button type="button" class="btn-prioridad" onclick="seleccionarPrioridad(this, 'BAJA')">BAJA</button>
-            </div>
-
-            <label>Tipo de Cuadrilla:</label>
-            <select id="cuadrilla-insp">
-                <option>LIVIANA</option><option>PESADA</option><option>GRUA</option>
-                <option>CANASTA</option><option>COMUNITARIA</option><option>PODADOR DE ALTURA</option>
-            </select>
-
-            <label>Cantidad de Personal:</label>
-            <input type="number" id="cant-personal" placeholder="Número de técnicos">
-
-            <label>Evidencia Fotográfica (3 Fotos):</label>
-            <div class="grid-3">
-                <div class="foto-input-group">
-                    <input type="file" accept="image/*" id="insp-f1" onchange="previsualizar(this, 'p-insp-1')">
-                    <div id="p-insp-1" class="preview-box"></div>
-                </div>
-                <div class="foto-input-group">
-                    <input type="file" accept="image/*" id="insp-f2" onchange="previsualizar(this, 'p-insp-2')">
-                    <div id="p-insp-2" class="preview-box"></div>
-                </div>
-                <div class="foto-input-group">
-                    <input type="file" accept="image/*" id="insp-f3" onchange="previsualizar(this, 'p-insp-3')">
-                    <div id="p-insp-3" class="preview-box"></div>
-                </div>
-            </div>
-
-            <label>Ubicación:</label>
-            <div id="map-insp" style="height: 250px; border-radius: 10px;"></div>
-            <p class="coords-text">Coordenadas: <span id="txt-coords-insp">0, 0</span></p>
-
-            <label>Observaciones:</label>
-            <textarea id="obs-insp" rows="3" style="width:100%; background:#252525; color:white; border-radius:6px; border:1px solid #333;"></textarea>
-
-            <label>Estado:</label>
-            <select id="estado-insp">
-                <option>PENDIENTE</option><option>EJECUCIÓN</option><option>TERMINADA</option>
-            </select>
-
-            <button type="button" class="btn-enviar" onclick="alert('Registro de Inspección Guardado')">FINALIZAR REGISTRO</button>
-        </form>
-    </div>
-
-    <div id="form-poda-container" class="container" style="display:none;">
-        <button class="btn-regresar" onclick="mostrarSubmenu()"><i class="fas fa-arrow-left"></i> Volver</button>
-        <header><h1>INFORME DE PODA</h1></header>
         <form id="form-poda">
             <label>Circuito:</label>
             <select id="poda-circuito">
@@ -134,26 +28,32 @@
                 <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
                 <option>GMC-L377 RS CAMPAMENTO</option>
             </select>
+
             <label>Zona de Trabajo:</label>
-            <input type="text" id="poda-zona">
+            <input type="text" id="poda-zona" placeholder="Ej: Aldea El Plomo">
+
             <label>Fecha:</label>
             <input type="date" id="poda-fecha">
+
             <div class="grid-2">
                 <div><label>Hora Inicio:</label><input type="time" id="h-ini"></div>
                 <div><label>Hora Final:</label><input type="time" id="h-fin"></div>
             </div>
+
             <label>Trabajo ejecutado:</label>
             <div class="grid-3">
-                <input type="number" id="m-brecha" placeholder="Brecha">
-                <input type="number" id="m-poda" placeholder="Poda">
+                <input type="number" id="m-brecha" placeholder="Brecha (m)">
+                <input type="number" id="m-poda" placeholder="Poda (m)">
                 <input type="number" id="m-postes" placeholder="Postes">
             </div>
+
             <label>Personal y Pagos:</label>
             <input type="number" id="poda-personas" placeholder="Personas Contratadas">
             <div class="grid-2">
                 <input type="number" id="pago-mo" placeholder="Mano de Obra (L)">
                 <input type="number" id="pago-trans" placeholder="Transporte (L)">
             </div>
+
             <label>Responsables:</label>
             <input type="text" id="resp-super" placeholder="Responsable Supervisión">
             <input type="text" id="resp-activ" placeholder="Responsable Actividades Contratista">
@@ -161,15 +61,15 @@
             <label>Fotos Grupo e Identidades:</label>
             <div class="grid-3">
                 <div class="foto-input-group">
-                    <span>GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
+                    <span>GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')" capture="camera">
                     <div id="p-f-grupo" class="preview-box"></div>
                 </div>
                 <div class="foto-input-group">
-                    <span>DNI FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
+                    <span>DNI FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')" capture="camera">
                     <div id="p-f-idf" class="preview-box"></div>
                 </div>
                 <div class="foto-input-group">
-                    <span>DNI REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')">
+                    <span>DNI REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')" capture="camera">
                     <div id="p-f-idr" class="preview-box"></div>
                 </div>
             </div>
@@ -180,12 +80,14 @@
                 <div class="foto-input-group"><input type="file" id="f-ini-2" onchange="previsualizar(this, 'p-ini-2')"><div id="p-ini-2" class="preview-box"></div></div>
                 <div class="foto-input-group"><input type="file" id="f-ini-3" onchange="previsualizar(this, 'p-ini-3')"><div id="p-ini-3" class="preview-box"></div></div>
             </div>
+
             <label>Fotos Durante:</label>
             <div class="grid-3">
                 <div class="foto-input-group"><input type="file" id="f-eje-1" onchange="previsualizar(this, 'p-eje-1')"><div id="p-eje-1" class="preview-box"></div></div>
                 <div class="foto-input-group"><input type="file" id="f-eje-2" onchange="previsualizar(this, 'p-eje-2')"><div id="p-eje-2" class="preview-box"></div></div>
                 <div class="foto-input-group"><input type="file" id="f-eje-3" onchange="previsualizar(this, 'p-eje-3')"><div id="p-eje-3" class="preview-box"></div></div>
             </div>
+
             <label>Fotos Después:</label>
             <div class="grid-3">
                 <div class="foto-input-group"><input type="file" id="f-fin-1" onchange="previsualizar(this, 'p-fin-1')"><div id="p-fin-1" class="preview-box"></div></div>
@@ -199,14 +101,15 @@
                 <div id="p-f-recibo" class="preview-box" style="height: 100px;"></div>
             </div>
 
-            <label>GPS:</label>
-            <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
+            <label>Ubicación GPS:</label>
+            <div id="map-poda" style="height: 250px; border-radius: 10px; margin-bottom: 10px;"></div>
             <div class="grid-2">
-                <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">GPS INICIO</button>
-                <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">GPS FINAL</button>
+                <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">INICIO TRAMO</button>
+                <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">FINAL TRAMO</button>
             </div>
             <p class="coords-text" id="coords-display">Inicio: -- | Fin: --</p>
-            <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME PODA</button>
+
+            <button type="button" class="btn-enviar" onclick="enviarPodaAGoogle()">SUBIR REPORTE A GOOGLE</button>
         </form>
     </div>
 
