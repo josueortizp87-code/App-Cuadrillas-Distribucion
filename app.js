@@ -1,5 +1,5 @@
 // CONFIGURACIÓN: PEGA TU URL DE GOOGLE APPS SCRIPT AQUÍ
-const SCRIPT_URL = "TU_URL_AQUI";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEXAevasSFIKmHc8LYHV2oObcfU6QeYR38gpzEMpFqkn2DTSb3FHVkXJr19jDTD6ST/exec";
 
 var mapP, markerP;
 var gpsIni = "No marcado", gpsFin = "No marcado";
