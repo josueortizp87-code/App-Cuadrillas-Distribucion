@@ -111,7 +111,7 @@ async function generarPDFPoda() {
     }
 
     await enviarDatosCloudflare();
-    doc.save("Informe_Poda_Final.pdf")
+    doc.save("Informe_Poda_Final.pdf");
 
 }
 
@@ -132,7 +132,7 @@ function previsualizar(input, idContenedor) {
     }
 }
 // --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
-function enviarDatosCloudflare() {
+async function enviarDatosCloudflare() {
     const data = {
         circuito: document.getElementById('poda-circuito').value,
         zona_trabajo: document.getElementById('poda-zona').value,
@@ -162,13 +162,13 @@ function enviarDatosCloudflare() {
         fecha_envio: new Date().toISOString()
     };
 
-    const blob = new Blob(
-        [JSON.stringify(data)],
-        { type: "application/json" }
-    );
-
-    navigator.sendBeacon(
+    return fetch(
         "https://api-cuadrillas.cgujuticalpa.workers.dev/",
-        blob
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            keepalive: true   // ✅ CLAVE PARA WEBVIEW
+        }
     );
 }
