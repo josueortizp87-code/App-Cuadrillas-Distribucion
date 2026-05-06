@@ -110,8 +110,8 @@ async function generarPDFPoda() {
         doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
     }
 
-    enviarDatosCloudflare();   // envío en segundo plano
-    doc.save("Informe_Poda_Final.pdf")  // PDF se genera SIEMPRE
+    doc.save("Informe_Poda_Final.pdf");
+    enviarDatosCloudflare()
 
 }
 
@@ -133,42 +133,38 @@ function previsualizar(input, idContenedor) {
 }
 // --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
 function enviarDatosCloudflare() {
-    try {
-        const data = {
-            circuito: document.getElementById('poda-circuito').value,
-            zona_trabajo: document.getElementById('poda-zona').value,
-            fecha: document.getElementById('poda-fecha').value,
-            hora_inicio: document.getElementById('h-ini').value,
-            hora_final: document.getElementById('h-fin').value,
+    const data = {
+        circuito: document.getElementById('poda-circuito').value,
+        zona_trabajo: document.getElementById('poda-zona').value,
+        fecha: document.getElementById('poda-fecha').value,
+        hora_inicio: document.getElementById('h-ini').value,
+        hora_final: document.getElementById('h-fin').value,
 
-            gps_inicio: gpsIni,
-            gps_final: gpsFin,
+        gps_inicio: gpsIni,
+        gps_final: gpsFin,
 
-            lat_inicio: latIni,
-            lng_inicio: lngIni,
-            lat_final: latFin,
-            lng_final: lngFin,
+        lat_inicio: latIni,
+        lng_inicio: lngIni,
+        lat_final: latFin,
+        lng_final: lngFin,
 
-            m_brecha: document.getElementById('m-brecha').value,
-            m_poda: document.getElementById('m-poda').value,
-            m_postes: document.getElementById('m-postes').value,
+        m_brecha: document.getElementById('m-brecha').value,
+        m_poda: document.getElementById('m-poda').value,
+        m_postes: document.getElementById('m-postes').value,
 
-            personas: document.getElementById('poda-personas').value,
-            pago_mo: document.getElementById('pago-mo').value,
-            pago_trans: document.getElementById('pago-trans').value,
+        personas: document.getElementById('poda-personas').value,
+        pago_mo: document.getElementById('pago-mo').value,
+        pago_trans: document.getElementById('pago-trans').value,
 
-            responsable_super: document.getElementById('resp-super').value,
-            responsable_contratista: document.getElementById('resp-activ').value,
+        responsable_super: document.getElementById('resp-super').value,
+        responsable_contratista: document.getElementById('resp-activ').value,
 
-            fecha_envio: new Date().toISOString()
-        };
+        fecha_envio: new Date().toISOString()
+    };
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "https://api-cuadrillas.cgujuticalpa.workers.dev/", false); // ⚠️ SÍNCRONO
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(JSON.stringify(data));
-
-    } catch (e) {
-        console.warn("Error enviando a Cloudflare:", e);
-    }
+    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
 }
