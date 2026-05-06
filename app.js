@@ -110,8 +110,8 @@ async function generarPDFPoda() {
         doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
     }
 
+    await enviarDatosCloudflare();
     doc.save("Informe_Poda_Final.pdf");
-    enviarDatosCloudflare()
 
 }
 
@@ -162,9 +162,13 @@ function enviarDatosCloudflare() {
         fecha_envio: new Date().toISOString()
     };
 
-    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+    return new Promise((resolve) => {
+        fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+        .catch(() => {})        // ignoramos errores
+        .finally(() => resolve()); // SIEMPRE resolvemos
     });
 }
