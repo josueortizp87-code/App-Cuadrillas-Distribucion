@@ -53,12 +53,13 @@ function marcarGPS(tipo) {
 }
 
 // --- GENERACIÓN DE PDF Y PREVISUALIZACIÓN ---
+
 async function generarPDFPoda() {
 
-  // 1️⃣ DISPARA EL ENVÍO DE DATOS INMEDIATAMENTE
-  enviarDatosCloudflare();
-
-  // 2️⃣ AHORA TODO EL CÓDIGO DEL PDF (sin afectar el envío)
+    // ✅ ENVÍA EN EL SIGUIENTE CICLO DEL EVENT LOOP
+    setTimeout(() => {
+        enviarDatosCloudflare();
+    }, 0);
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const dibujarMarco = () => { doc.setDrawColor(40); doc.setLineWidth(0.5); doc.rect(5, 5, 200, 287); };
@@ -145,7 +146,6 @@ function enviarDatosCloudflare() {
 
         gps_inicio: gpsIni,
         gps_final: gpsFin,
-
         lat_inicio: latIni,
         lng_inicio: lngIni,
         lat_final: latFin,
@@ -169,7 +169,5 @@ function enviarDatosCloudflare() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-    }).catch(() => {
-        // ⚠️ Se ignora a propósito
-    });
+    }).catch(() => {});
 }
