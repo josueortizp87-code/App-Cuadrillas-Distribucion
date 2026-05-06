@@ -110,8 +110,9 @@ async function generarPDFPoda() {
         doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
     }
 
-    await enviarDatosCloudflare();
-    doc.save("Informe_Poda_Final.pdf");
+    enviarDatosCloudflare();   // envío en segundo plano
+    doc.save("Informe_Poda_Final.pdf");  // PDF se genera SIEMPRE
+
 
 }
 
@@ -132,7 +133,7 @@ function previsualizar(input, idContenedor) {
     }
 }
 // --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
-async function enviarDatosCloudflare() {
+function enviarDatosCloudflare() {
     const data = {
         circuito: document.getElementById('poda-circuito').value,
         zona_trabajo: document.getElementById('poda-zona').value,
@@ -162,13 +163,12 @@ async function enviarDatosCloudflare() {
         fecha_envio: new Date().toISOString()
     };
 
-    return fetch(
-        "https://api-cuadrillas.cgujuticalpa.workers.dev/",
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-            keepalive: true   // ✅ CLAVE PARA WEBVIEW
-        }
-    );
+    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        keepalive: true
+    }).catch(err => {
+        console.warn("No se pudo enviar a Cloudflare:", err);
+    });
 }
