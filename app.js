@@ -1,5 +1,7 @@
 var mapP, markerP;
 var gpsIni = "No marcado", gpsFin = "No marcado";
+var latIni = null, lngIni = null;
+var latFin = null, lngFin = null;
 
 window.onload = function() {
     initMapPoda();
@@ -32,10 +34,19 @@ function initMapPoda() {
 // GPS
 function marcarGPS(tipo) {
     let p = markerP.getLatLng();
-    let c = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
+    let lat = Number(p.lat.toFixed(6));
+    let lng = Number(p.lng.toFixed(6));
+    let c = lat + ", " + lng;
 
-    if (tipo === 'ini') gpsIni = c;
-    else gpsFin = c;
+    if (tipo === 'ini') {
+        gpsIni = c;
+        latIni = lat;
+        lngIni = lng;
+    } else {
+        gpsFin = c;
+        latFin = lat;
+        lngFin = lng;
+    }
 
     document.getElementById('coords-display').innerText =
         `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
@@ -130,6 +141,11 @@ async function enviarDatosCloudflare() {
 
         gps_inicio: gpsIni,
         gps_final: gpsFin,
+
+        lat_inicio: latIni,
+        lng_inicio: lngIni,
+        lat_final: latFin,
+        lng_final: lngFin,
 
         m_brecha: document.getElementById('m-brecha').value,
         m_poda: document.getElementById('m-poda').value,
