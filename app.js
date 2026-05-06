@@ -111,8 +111,7 @@ async function generarPDFPoda() {
     }
 
     enviarDatosCloudflare();   // envío en segundo plano
-    doc.save("Informe_Poda_Final.pdf");  // PDF se genera SIEMPRE
-
+    doc.save("Informe_Poda_Final.pdf")  // PDF se genera SIEMPRE
 
 }
 
