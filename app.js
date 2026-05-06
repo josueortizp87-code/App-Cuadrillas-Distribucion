@@ -54,8 +54,11 @@ function marcarGPS(tipo) {
 
 // --- GENERACIÓN DE PDF Y PREVISUALIZACIÓN ---
 async function generarPDFPoda() {
-    alert("ENTRÉ a generarPDFPoda");
 
+  // 1️⃣ DISPARA EL ENVÍO DE DATOS INMEDIATAMENTE
+  enviarDatosCloudflare();
+
+  // 2️⃣ AHORA TODO EL CÓDIGO DEL PDF (sin afectar el envío)
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const dibujarMarco = () => { doc.setDrawColor(40); doc.setLineWidth(0.5); doc.rect(5, 5, 200, 287); };
@@ -111,9 +114,6 @@ async function generarPDFPoda() {
         doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
     }
 
-
-    alert("VOY a enviarDatosCloudflare");
-    enviarDatosCloudflare();
     doc.save("Informe_Poda_Final.pdf");
 
 }
