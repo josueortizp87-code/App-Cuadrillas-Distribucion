@@ -135,19 +135,41 @@ function previsualizar(input, idContenedor) {
     }
 }
 // --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
-
 function enviarDatosCloudflare() {
     const data = {
-        prueba: "hola desde la app",
-        timestamp: new Date().toISOString()
+        circuito: document.getElementById('poda-circuito').value,
+        zona_trabajo: document.getElementById('poda-zona').value,
+        fecha: document.getElementById('poda-fecha').value,
+        hora_inicio: document.getElementById('h-ini').value,
+        hora_final: document.getElementById('h-fin').value,
+
+        gps_inicio: gpsIni,
+        gps_final: gpsFin,
+
+        lat_inicio: latIni,
+        lng_inicio: lngIni,
+        lat_final: latFin,
+        lng_final: lngFin,
+
+        m_brecha: document.getElementById('m-brecha').value,
+        m_poda: document.getElementById('m-poda').value,
+        m_postes: document.getElementById('m-postes').value,
+
+        personas: document.getElementById('poda-personas').value,
+        pago_mo: document.getElementById('pago-mo').value,
+        pago_trans: document.getElementById('pago-trans').value,
+
+        responsable_super: document.getElementById('resp-super').value,
+        responsable_contratista: document.getElementById('resp-activ').value,
+
+        fecha_envio: new Date().toISOString()
     };
 
     fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-    })
-    .then(r => r.text())
-    .then(t => alert("Respuesta Cloudflare: " + t))
-    .catch(e => alert("ERROR Cloudflare: " + e));
+    }).catch(() => {
+        // ⚠️ Se ignora a propósito
+    });
 }
