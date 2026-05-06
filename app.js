@@ -163,12 +163,12 @@ function enviarDatosCloudflare() {
     };
 
     return new Promise((resolve) => {
-        fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        })
-        .catch(() => {})        // ignoramos errores
-        .finally(() => resolve()); // SIEMPRE resolvemos
-    });
+    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(r => alert("Cloudflare dice: " + JSON.stringify(r)))
+    .catch(e => alert("ERROR enviando: " + e))
 }
