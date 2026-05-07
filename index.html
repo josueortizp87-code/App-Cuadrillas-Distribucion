@@ -13,12 +13,31 @@
 
 <body>
 
-<div id="form-poda-container" class="container">
+<!-- SECCIÓN DE LOGIN -->
+<div id="login-container" class="container">
+    <header>
+        <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" 
+        alt="ENEE" style="height: 80px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+        <h1>Acceso al Sistema</h1>
+    </header>
+    <div class="card" style="cursor: default; padding: 20px;">
+        <label>Usuario:</label>
+        <input type="text" id="user" placeholder="Ingrese su usuario">
+        <label>Contraseña:</label>
+        <input type="password" id="pass" placeholder="Ingrese su contraseña">
+        <button class="btn-enviar" onclick="validarLogin()">INGRESAR</button>
+        <p id="login-error" style="color: #e74c3c; font-size: 0.8rem; margin-top: 10px; display: none;">Credenciales incorrectas</p>
+    </div>
+</div>
+
+<!-- SECCIÓN DEL FORMULARIO (OCULTA POR DEFECTO) -->
+<div id="form-poda-container" class="container" style="display: none;">
     <header>
         <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
         alt="ENEE"
         style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
         <h1>SECTOR JUTICALPA - PODA COMUNITARIA</h1>
+        <p id="user-display" style="color: var(--accent); font-weight: bold; font-size: 0.8rem;"></p>
         <p>Desarrollador - Josué Ortiz</p>
     </header>
 
@@ -61,11 +80,18 @@
         <input type="text" id="resp-activ" placeholder="Responsable Actividades Contratista">
 
         <label>Fotos Grupo e Identidades:</label>
-        <div class="grid-3">
+        <p style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">* Se sugiere tomar fotos en formato horizontal para Grupo y Vehículo.</p>
+        <div class="grid-2" style="margin-bottom: 8px;">
             <div class="foto-input-group">
                 <span>GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
                 <div id="p-f-grupo" class="preview-box"></div>
             </div>
+            <div class="foto-input-group">
+                <span>VEHÍCULO</span><input type="file" id="f-vehiculo" onchange="previsualizar(this, 'p-f-vehiculo')">
+                <div id="p-f-vehiculo" class="preview-box"></div>
+            </div>
+        </div>
+        <div class="grid-2">
             <div class="foto-input-group">
                 <span>DNI FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
                 <div id="p-f-idf" class="preview-box"></div>
@@ -97,14 +123,14 @@
             <div class="foto-input-group"><input type="file" id="f-fin-3" onchange="previsualizar(this, 'p-fin-3')"><div id="p-fin-3" class="preview-box"></div></div>
         </div>
 
-        <label>Recibo de Pago:</label>
-        <div class="foto-input-group">
-            <input type="file" id="f-recibo" onchange="previsualizar(this, 'p-f-recibo')">
-            <div id="p-f-recibo" class="preview-box" style="height: 100px;"></div>
-        </div>
-
-        <label>GPS:</label>
+        <label>GPS (Satelital):</label>
         <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
+        
+        <div class="grid-2">
+            <input type="text" id="manual-lat" placeholder="Latitud Manual">
+            <input type="text" id="manual-lng" placeholder="Longitud Manual">
+        </div>
+        <button type="button" class="btn-secundario" style="margin-top: 5px;" onclick="ingresarManual()">USAR COORDENADA MANUAL</button>
 
         <div class="grid-2">
             <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">GPS INICIO</button>
