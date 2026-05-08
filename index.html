@@ -42,7 +42,7 @@
 
 <div id="form-poda-container" class="container" style="display: none;">
     <header>
-        <img id="logo-main" src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px;">
+        <img id="logo-img" src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" crossorigin="anonymous" alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px;">
         <h1 id="sector-title">PODA COMUNITARIA</h1>
     </header>
 
@@ -111,19 +111,19 @@
 
         <label>EVIDENCIA DE CAMPO (9 FOTOS):</label>
         <div class="grid-3">
-            <input type="file" id="f-a1" onchange="previsualizar(this, 'p-a1')">
-            <input type="file" id="f-a2" onchange="previsualizar(this, 'p-a2')">
-            <input type="file" id="f-a3" onchange="previsualizar(this, 'p-a3')">
+            <div class="foto-input-group"><span>A1</span><input type="file" id="f-a1" onchange="previsualizar(this, 'p-a1')"><div id="p-a1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>A2</span><input type="file" id="f-a2" onchange="previsualizar(this, 'p-a2')"><div id="p-a2" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>A3</span><input type="file" id="f-a3" onchange="previsualizar(this, 'p-a3')"><div id="p-a3" class="preview-box"></div></div>
         </div>
         <div class="grid-3">
-            <input type="file" id="f-d1" onchange="previsualizar(this, 'p-d1')">
-            <input type="file" id="f-d2" onchange="previsualizar(this, 'p-d2')">
-            <input type="file" id="f-d3" onchange="previsualizar(this, 'p-d3')">
+            <div class="foto-input-group"><span>D1</span><input type="file" id="f-d1" onchange="previsualizar(this, 'p-d1')"><div id="p-d1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>D2</span><input type="file" id="f-d2" onchange="previsualizar(this, 'p-d2')"><div id="p-d2" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>D3</span><input type="file" id="f-d3" onchange="previsualizar(this, 'p-d3')"><div id="p-d3" class="preview-box"></div></div>
         </div>
         <div class="grid-3">
-            <input type="file" id="f-f1" onchange="previsualizar(this, 'p-f1')">
-            <input type="file" id="f-f2" onchange="previsualizar(this, 'p-f2')">
-            <input type="file" id="f-f3" onchange="previsualizar(this, 'p-f3')">
+            <div class="foto-input-group"><span>F1</span><input type="file" id="f-f1" onchange="previsualizar(this, 'p-f1')"><div id="p-f1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>F2</span><input type="file" id="f-f2" onchange="previsualizar(this, 'p-f2')"><div id="p-f2" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>F3</span><input type="file" id="f-f3" onchange="previsualizar(this, 'p-f3')"><div id="p-f3" class="preview-box"></div></div>
         </div>
 
         <div id="map-poda" style="height: 200px; border-radius: 8px; margin: 15px 0;"></div>
