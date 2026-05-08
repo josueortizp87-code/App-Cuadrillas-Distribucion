@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENEE - UTCD Poda Comunitaria</title>
-
+    <title>ENEE - Poda Comunitaria</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
-
 <body>
 
 <div id="login-container" class="container">
     <header>
-        <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" 
-        alt="ENEE" style="height: 80px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-        <h1>Acceso al Sistema UTCD</h1>
+        <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" alt="ENEE" style="height: 80px; background-color: white; padding: 10px; border-radius: 8px;">
+        <h1>Acceso por Sector</h1>
     </header>
-    <div class="card" style="cursor: default; padding: 20px;">
-        <label>Sector:</label>
+    <div class="card" style="padding: 20px;">
+        <label>Sector de Trabajo:</label>
         <select id="user-sector">
             <option value="BRUS LAGUNA">BRUS LAGUNA</option>
             <option value="CHOLUTECA">CHOLUTECA</option>
@@ -40,45 +38,44 @@
         <label>Contraseña:</label>
         <input type="password" id="pass" placeholder="Ingrese contraseña">
         <button class="btn-enviar" onclick="validarLogin()">INGRESAR</button>
-        <p id="login-error" style="color: #e74c3c; font-size: 0.8rem; margin-top: 10px; display: none;">Credenciales incorrectas</p>
+        <p id="login-error" style="color: #e74c3c; display: none; margin-top:10px;">Credenciales incorrectas</p>
     </div>
 </div>
 
 <div id="form-poda-container" class="container" style="display: none;">
     <header>
-        <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
-        alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-        <h1 id="header-sector-title">PODA COMUNITARIA</h1>
-        <p id="user-display" style="color: var(--accent); font-weight: bold; font-size: 0.8rem;"></p>
+        <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px;">
+        <h1 id="sector-title">PODA COMUNITARIA</h1>
     </header>
 
     <form id="form-poda">
-        <label>Datos del Informe:</label>
-        <select id="poda-circuito">
-            <option>L375</option><option>L376</option><option>L377</option><option>L378</option>
-            <option>L379</option><option>L380</option><option>L381</option><option>L382</option>
-        </select>
-        <input type="text" id="poda-zona" placeholder="Zona de Trabajo">
+        <label>CIRCUITO:</label>
+        <input type="text" id="poda-circuito" placeholder="Escriba el circuito (ej. JUT-L379)">
+        
+        <label>ZONA DE TRABAJO:</label>
+        <input type="text" id="poda-zona">
+
+        <label>FECHA:</label>
         <input type="date" id="poda-fecha">
 
         <div class="grid-2">
-            <div><label>Hora Inicio:</label><input type="time" id="h-ini"></div>
-            <div><label>Hora Final:</label><input type="time" id="h-fin"></div>
+            <div><label>HORA INICIO:</label><input type="time" id="h-ini"></div>
+            <div><label>HORA FINAL:</label><input type="time" id="h-fin"></div>
         </div>
 
-        <label>Trabajo ejecutado:</label>
+        <label>TRABAJO EJECUTADO:</label>
         <div class="grid-3">
-            <input type="number" id="m-brecha" placeholder="Brecha (m)">
-            <input type="number" id="m-poda" placeholder="Poda (m)">
+            <input type="number" id="m-brecha" placeholder="Brecha">
+            <input type="number" id="m-poda" placeholder="Poda">
             <input type="number" id="m-postes" placeholder="Postes">
         </div>
 
-        <label>Personal y Responsables:</label>
-        <input type="number" id="poda-personas" placeholder="Personas Contratadas">
+        <label>RESPONSABLES:</label>
         <input type="text" id="resp-super" placeholder="Responsable Supervisión">
         <input type="text" id="resp-activ" placeholder="Responsable Contratista">
+        <input type="number" id="poda-personas" placeholder="Cantidad de Personas">
 
-        <label>Fotos Principales (Sugerido: Horizontal):</label>
+        <label>FOTOS PRINCIPALES (GRUPO Y VEHÍCULO):</label>
         <div class="grid-2">
             <div class="foto-input-group">
                 <span>FOTO GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
@@ -90,7 +87,7 @@
             </div>
         </div>
 
-        <label>Líder de Cuadrilla:</label>
+        <label>LÍDER DE CUADRILLA:</label>
         <div class="grid-2">
             <div class="foto-input-group">
                 <span>DNI FRONTAL</span><input type="file" id="f-lider-f" onchange="previsualizar(this, 'p-f-lider-f')">
@@ -102,45 +99,54 @@
             </div>
         </div>
 
-        <label>DNI Beneficiario:</label>
+        <label>IDENTIDAD BENEFICIARIO:</label>
         <div class="grid-2">
             <div class="foto-input-group">
-                <span>FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
+                <span>DNI FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
                 <div id="p-f-idf" class="preview-box"></div>
             </div>
             <div class="foto-input-group">
-                <span>REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')">
+                <span>DNI REVÉS</span><input type="file" id="f-id-r" onchange="previsualizar(this, 'p-f-idr')">
                 <div id="p-f-idr" class="preview-box"></div>
             </div>
         </div>
 
-        <label>Evidencia de Campo:</label>
+        <label>EVIDENCIA DE CAMPO (9 FOTOS):</label>
         <div class="grid-3">
-            <div class="foto-input-group"><span>ANTES</span><input type="file" id="f-ini-1" onchange="previsualizar(this, 'p-ini-1')"><div id="p-ini-1" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>DURANTE</span><input type="file" id="f-eje-1" onchange="previsualizar(this, 'p-eje-1')"><div id="p-eje-1" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>DESPUÉS</span><input type="file" id="f-fin-1" onchange="previsualizar(this, 'p-fin-1')"><div id="p-fin-1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>ANTES 1</span><input type="file" id="f-a1" onchange="previsualizar(this, 'p-a1')"><div id="p-a1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>ANTES 2</span><input type="file" id="f-a2" onchange="previsualizar(this, 'p-a2')"><div id="p-a2" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>ANTES 3</span><input type="file" id="f-a3" onchange="previsualizar(this, 'p-a3')"><div id="p-a3" class="preview-box"></div></div>
+        </div>
+        <div class="grid-3">
+            <div class="foto-input-group"><span>DURANTE 1</span><input type="file" id="f-d1" onchange="previsualizar(this, 'p-d1')"><div id="p-d1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>DURANTE 2</span><input type="file" id="f-d2" onchange="previsualizar(this, 'p-d2')"><div id="p-d2" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>DURANTE 3</span><input type="file" id="f-d3" onchange="previsualizar(this, 'p-d3')"><div id="p-d3" class="preview-box"></div></div>
+        </div>
+        <div class="grid-3">
+            <div class="foto-input-group"><span>DESPUÉS 1</span><input type="file" id="f-f1" onchange="previsualizar(this, 'p-f1')"><div id="p-f1" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>DESPUÉS 2</span><input type="file" id="f-f2" onchange="previsualizar(this, 'p-f2')"><div id="p-f2" class="preview-box"></div></div>
+            <div class="foto-input-group"><span>DESPUÉS 3</span><input type="file" id="f-f3" onchange="previsualizar(this, 'p-f3')"><div id="p-f3" class="preview-box"></div></div>
         </div>
 
-        <label>GPS (Esri Satelital):</label>
-        <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
+        <label>GPS:</label>
+        <div id="map-poda" style="height: 180px; border-radius: 8px; margin-bottom: 10px;"></div>
         <div class="grid-2">
-            <input type="text" id="manual-lat" placeholder="Latitud">
-            <input type="text" id="manual-lng" placeholder="Longitud">
+            <input type="text" id="lat-m" placeholder="Latitud">
+            <input type="text" id="lng-m" placeholder="Longitud">
         </div>
-        <button type="button" class="btn-secundario" onclick="ingresarManual()">FIJAR COORDENADA MANUAL</button>
+        <button type="button" class="btn-secundario" onclick="setManual()">FIJAR GPS MANUAL</button>
 
         <div class="grid-2">
-            <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">GPS INICIO</button>
-            <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">GPS FINAL</button>
+            <button type="button" class="btn-secundario" onclick="marcar('ini')">INICIO</button>
+            <button type="button" class="btn-secundario" onclick="marcar('fin')">FINAL</button>
         </div>
-        <p class="coords-text" id="coords-display">Inicio: -- | Fin: --</p>
+        <p id="c-txt" class="coords-text">Inicio: -- | Fin: --</p>
 
-        <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME TÉCNICO</button>
+        <button type="button" class="btn-enviar" onclick="crearPDF()">GENERAR REPORTE PDF</button>
     </form>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
