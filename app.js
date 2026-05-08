@@ -27,33 +27,31 @@ function marcar(t) {
     document.getElementById('c-txt').innerText = `Inicio: ${gIni} | Fin: ${gFin}`;
 }
 
-// Función corregida para dibujar el encabezado sin errores de CORS
 function drawHeader(doc, s) {
     doc.setDrawColor(0); doc.setLineWidth(0.5);
-    doc.rect(10, 10, 190, 277); // Marco
-    doc.line(10, 30, 200, 30);  // Base encabezado
-    doc.line(65, 10, 65, 30);   // Divisor logo
-    doc.line(140, 10, 140, 30); // Divisor título
-    doc.line(140, 17, 200, 17); // Divisor Código
-    doc.line(140, 24, 200, 24); // Divisor Versión
-    doc.line(165, 10, 165, 30); // Divisor etiquetas
+    doc.rect(10, 10, 190, 277); 
+    doc.line(10, 30, 200, 30);  
+    doc.line(65, 10, 65, 30);   
+    doc.line(140, 10, 140, 30); 
+    doc.line(140, 17, 200, 17); 
+    doc.line(140, 24, 200, 24); 
+    doc.line(165, 10, 165, 30); 
 
-    // Dibujamos el logo usando el elemento HTML existente
-    const imgLogo = document.getElementById('logo-img');
-    try {
-        doc.addImage(imgLogo, 'PNG', 15, 12, 45, 15);
-    } catch (e) {
-        doc.text("ENEE UTCD", 37, 20, {align:"center"});
-    }
+    // SOLUCIÓN AL ERROR: Texto en lugar de imagen para evitar bloqueos CORS
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("ENEE", 37, 18, {align:"center"});
+    doc.setFontSize(8);
+    doc.text("UTCD", 37, 24, {align:"center"});
     
-    doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+    doc.setFontSize(9);
     doc.text("INFORME DE PODA COMUNITARIA", 102, 18, {align:"center"});
     doc.text("SECTOR " + s, 102, 23, {align:"center"});
 
     doc.setFontSize(7);
     doc.text("Código", 142, 15);
     doc.text("Versión", 142, 22); doc.text("1", 182, 22);
-    doc.text("Fecha", 142, 28); // Espacio en blanco
+    doc.text("Fecha", 142, 28); 
 }
 
 async function crearPDF() {
@@ -64,12 +62,15 @@ async function crearPDF() {
         const getB64 = (id) => {
             const f = document.getElementById(id).files[0];
             if(!f) return null;
-            return new Promise(res => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(f); });
+            return new Promise(res => { 
+                const r = new FileReader(); 
+                r.onload = (e) => res(e.target.result); 
+                r.readAsDataURL(f); 
+            });
         };
 
         drawHeader(doc, sector);
         
-        // CUADRO DE INFORMACIÓN PÁGINA 1
         doc.setFontSize(9);
         doc.rect(15, 35, 180, 45); 
         
@@ -94,7 +95,6 @@ async function crearPDF() {
         if(fG) { doc.setFont("helvetica", "bold"); doc.text("FOTO GRUPO", 105, 88, {align:"center"}); doc.addImage(fG, 'JPEG', 30, 92, 150, 85); doc.rect(30, 92, 150, 85); }
         if(fV) { doc.setFont("helvetica", "bold"); doc.text("FOTO VEHÍCULO", 105, 188, {align:"center"}); doc.addImage(fV, 'JPEG', 30, 192, 150, 85); doc.rect(30, 192, 150, 85); }
 
-        // PÁGINA 2: LÍDER DNI
         const fLF = await getB64('f-lider-f'), fLR = await getB64('f-lider-r');
         if(fLF || fLR) {
             doc.addPage(); drawHeader(doc, sector);
@@ -103,7 +103,6 @@ async function crearPDF() {
             if(fLR) { doc.addImage(fLR, 'JPEG', 55, 150, 100, 75); doc.rect(55, 150, 100, 75); }
         }
 
-        // PÁGINA 3 Y 4: DNI BENEFICIARIO AMPLIADO
         const dnis = [{id:'f-id-f', t:'DNI FRENTE BENEFICIARIO'}, {id:'f-id-r', t:'DNI REVÉS BENEFICIARIO'}];
         for(let d of dnis) {
             const img = await getB64(d.id);
@@ -115,7 +114,6 @@ async function crearPDF() {
             }
         }
 
-        // PÁGINA 5: EVIDENCIA 3x3
         doc.addPage(); drawHeader(doc, sector);
         let cats = [
             {t:"ANTES", ids:['f-a1','f-a2','f-a3']},
@@ -134,20 +132,26 @@ async function crearPDF() {
             yE += 80;
         }
 
-        doc.save(`Informe_${sector}_${document.getElementById('poda-circuito').value}.pdf`);
+        doc.save(`Informe_${sector}.pdf`);
     } catch (err) {
-        alert("Error: " + err.message);
-        console.error(err);
+        alert("Error al generar: " + err.message);
     }
 }
 
 function previsualizar(input, id) {
     const b = document.getElementById(id);
-    if (!b) return; // Evita el error "null"
+    if (!b) return; 
     b.innerHTML = "";
     if(input.files[0]) {
         const r = new FileReader();
-        r.onload = (e) => { const i = document.createElement('img'); i.src = e.target.result; i.style.width="100%"; i.style.height="100%"; i.style.objectFit="cover"; b.appendChild(i); };
+        r.onload = (e) => { 
+            const i = document.createElement('img'); 
+            i.src = e.target.result; 
+            i.style.width="100%"; 
+            i.style.height="100%"; 
+            i.style.objectFit="cover"; 
+            b.appendChild(i); 
+        };
         r.readAsDataURL(input.files[0]);
     }
 }
