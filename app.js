@@ -109,20 +109,18 @@ async function generarPDFPoda() {
     const fVehiculo = await leerFoto('f-vehiculo');
 
     if (fGrupo && fVehiculo) {
-        // AMBAS FOTOS: Grupo (arriba), Vehículo (abajo)
-        doc.text("EVIDENCIA GRUPAL:", 15, 63);
-        doc.addImage(fGrupo, 'JPEG', 15, 68, 180, 100);
-        doc.rect(15, 68, 180, 100);
-        
-        doc.text("EVIDENCIA VEHÍCULO:", 15, 178);
-        doc.addImage(fVehiculo, 'JPEG', 15, 183, 180, 100);
-        doc.rect(15, 183, 180, 100);
-    } else if (fGrupo) {
-        // SOLO GRUPO: Formato original grande
-        doc.text("EVIDENCIA GRUPAL:", 15, 63);
-        doc.addImage(fGrupo, 'JPEG', 10, 68, 190, 120);
-        doc.rect(10, 68, 190, 120);
-    }
+    doc.text("EVIDENCIA GRUPAL:", 15, 63);
+    doc.addImage(fGrupo, 'JPEG', 15, 68, 180, 80);
+    doc.rect(15, 68, 180, 80);
+    
+    doc.text("EVIDENCIA VEHÍCULO:", 15, 155);
+    doc.addImage(fVehiculo, 'JPEG', 15, 160, 180, 80);
+    doc.rect(15, 160, 180, 80);
+} else if (fGrupo) {
+    doc.text("EVIDENCIA GRUPAL:", 15, 63);
+    doc.addImage(fGrupo, 'JPEG', 10, 68, 190, 120);
+    doc.rect(10, 68, 190, 120);
+}
 
     const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
     for(let p of idsPersonal){
