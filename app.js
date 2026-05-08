@@ -1,82 +1,65 @@
 var mapP, markerP;
 var gpsIni = "No marcado", gpsFin = "No marcado";
-var latIni = null, lngIni = null;
-var latFin = null, lngFin = null;
+var currentSector = "";
 
-// CREDENCIALES
-const USUARIOS = {
-    "admin": "admin123",
-    "supervisor": "super123"
-};
+const SECTORES_PASS = "enee2024"; // Contraseña única para todos los sectores por ahora
 
 function validarLogin() {
-    const u = document.getElementById('user').value;
-    const p = document.getElementById('pass').value;
+    const sector = document.getElementById('user-sector').value;
+    const pass = document.getElementById('pass').value;
 
-    if (USUARIOS[u] && USUARIOS[u] === p) {
+    if (pass === SECTORES_PASS || (sector === "ADMIN" && pass === "admin123")) {
+        currentSector = sector;
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('form-poda-container').style.display = 'block';
-        document.getElementById('user-display').innerText = "Usuario: " + u.toUpperCase();
+        document.getElementById('header-sector-title').innerText = `SECTOR ${sector} - PODA COMUNITARIA`;
+        document.getElementById('user-display').innerText = "SESIÓN: " + sector;
         initMapPoda();
     } else {
         document.getElementById('login-error').style.display = 'block';
     }
 }
 
-// MAPA PODA (ESRI SATÉLITE)
+// Configuración del Mapa (Esri Satelital)
 function initMapPoda() {
     if (mapP) mapP.remove();
-
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
-
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community'
-    }).addTo(mapP);
-
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(mapP);
     markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            let lat = pos.coords.latitude;
-            let lng = pos.coords.longitude;
-            actualizarMarcador(lat, lng);
-        });
-    }
-    setTimeout(() => mapP.invalidateSize(), 300);
 }
 
-function actualizarMarcador(lat, lng) {
-    mapP.setView([lat, lng], 17);
-    markerP.setLatLng([lat, lng]);
-}
+// Función para dibujar el encabezado técnico en cada página
+function dibujarEncabezadoTecnico(doc, sector) {
+    // Marco exterior
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.5);
+    doc.rect(10, 10, 190, 277); // Marco principal de la hoja
 
-function ingresarManual() {
-    const lat = parseFloat(document.getElementById('manual-lat').value);
-    const lng = parseFloat(document.getElementById('manual-lng').value);
-    if (!isNaN(lat) && !isNaN(lng)) {
-        actualizarMarcador(lat, lng);
-    } else {
-        alert("Ingrese coordenadas válidas");
-    }
-}
+    // Estructura del encabezado (Imagen 1)
+    doc.line(10, 30, 200, 30); // Línea inferior del encabezado
+    doc.line(65, 10, 65, 30);  // Divisor logo
+    doc.line(140, 10, 140, 30); // Divisor título/datos
+    doc.line(140, 17, 200, 17); // Divisor código/versión
+    doc.line(140, 24, 200, 24); // Divisor versión/fecha
+    doc.line(165, 10, 165, 30); // Divisor etiquetas/valores
 
-function marcarGPS(tipo) {
-    let p = markerP.getLatLng();
-    let lat = Number(p.lat.toFixed(6));
-    let lng = Number(p.lng.toFixed(6));
-    let c = lat + ", " + lng;
+    // Logo (Simulado con texto si no hay base64, pero usaremos el espacio)
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("UTCD", 30, 20, {align: "center"});
+    doc.setFontSize(5);
+    doc.text("UNIDAD TÉCNICA DE CONTROL\nDE DISTRIBUCIÓN", 30, 24, {align: "center"});
 
-    if (tipo === 'ini') {
-        gpsIni = c;
-        latIni = lat;
-        lngIni = lng;
-    } else {
-        gpsFin = c;
-        latFin = lat;
-        lngFin = lng;
-    }
+    // Título Central
+    doc.setFontSize(9);
+    doc.text("INFORME DE PODA COMUNITARIA", 102, 18, {align: "center"});
+    doc.text(`SECTOR ${sector}`, 102, 23, {align: "center"});
 
-    document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
+    // Datos Derecha
+    doc.setFontSize(7);
+    doc.text("Código", 142, 15);
+    doc.text("Versión", 142, 22); doc.text("1", 182, 22);
+    doc.text("Fecha", 142, 28);
 }
 
 async function generarPDFPoda() {
