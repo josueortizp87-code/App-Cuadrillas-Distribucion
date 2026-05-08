@@ -59,6 +59,16 @@ function actualizarMarcador(lat, lng) {
     markerP.setLatLng([lat, lng]);
 }
 
+function ingresarManual() {
+    const lat = parseFloat(document.getElementById('manual-lat').value);
+    const lng = parseFloat(document.getElementById('manual-lng').value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+        actualizarMarcador(lat, lng);
+    } else {
+        alert("Por favor, ingrese valores numéricos válidos para Latitud y Longitud.");
+    }
+}
+
 function marcarGPS(tipo) {
     let p = markerP.getLatLng();
     let lat = Number(p.lat.toFixed(6));
