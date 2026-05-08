@@ -122,16 +122,84 @@ function dibujarEncabezadoPDF(doc) {
 /* =============================
    GENERAR PDF (PRUEBA ESTABLE)
 ============================= */
-function generarPDFPoda() {
+async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // ---------- HOJA 1 ----------
     dibujarEncabezadoPDF(doc);
 
-    doc.setFontSize(10);
-    doc.text("PDF DE PRUEBA ESTABLE", 20, 60);
-    doc.text("GPS Inicio: " + gpsIni, 20, 70);
-    doc.text("GPS Fin: " + gpsFin, 20, 80);
+    const leerFoto = id => {
+        const f = document.getElementById(id).files[0];
+        if (!f) return null;
+        return new Promise(res => {
+            const r = new FileReader();
+            r.onload = e => res(e.target.result);
+            r.readAsDataURL(f);
+        });
+    };
+
+    const fGrupo = await leerFoto("f-grupo");
+    const fVehiculo = await leerFoto("f-vehiculo");
+
+    if (!fGrupo) {
+        alert("La foto GRUPO es obligatoria.");
+        return;
+    }
+
+    const infoY = 45;
+
+    // Cuadro de información
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Circuito:", 15, infoY);
+    doc.text("Zona de trabajo:", 15, infoY + 6);
+    doc.text("Fecha:", 15, infoY + 12);
+    doc.text("Hora:", 15, infoY + 18);
+    doc.text("GPS:", 15, infoY + 24);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(document.getElementById("poda-circuito").value, 45, infoY);
+    doc.text(document.getElementById("poda-zona").value, 45, infoY + 6);
+    doc.text(document.getElementById("poda-fecha").value, 45, infoY + 12);
+    doc.text(
+        document.getElementById("h-ini").value + " - " +
+        document.getElementById("h-fin").value,
+        45,
+        infoY + 18
+    );
+    doc.text("Inicio " + gpsIni + " / Fin " + gpsFin, 45, infoY + 24);
+
+    doc.rect(12, infoY - 5, 185, 35);
+
+    let fotosY = infoY + 40;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("EVIDENCIA GRUPAL", 15, fotosY);
+
+    // Foto Grupo
+    agregarImagenProporcional(
+        doc,
+        fGrupo,
+        15,
+        fotosY + 5,
+        180,
+        fVehiculo ? 38 : 80
+    );
+
+    // Foto Vehículo (si existe)
+    if (fVehiculo) {
+        let vehY = fotosY + 48;
+        doc.text("EVIDENCIA VEHÍCULO", 15, vehY);
+        agregarImagenProporcional(
+            doc,
+            fVehiculo,
+            15,
+            vehY + 5,
+            180,
+            38
+        );
+    }
 
     doc.save("Informe_Poda_Final.pdf");
 }
