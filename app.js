@@ -21,9 +21,6 @@ const USUARIOS = {
     "tegucigalpa": "enee2026",
     "tocoa": "enee2026"
 };
-
-// LOGO ENEE EN BASE64 (Esto evita errores de CORS y SVG)
-const LOGO_ENEE_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABkCAYAAADD9SRhAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAL9SURBVHgB7Z2hbuNAEEXfS0mFhYWGpQUFBQUV/it8CgsLCwsLCws96SksLCwsLCwsPOnpX6B9idYm2WyS7STvSNo90mY3896MLyvxE0mSpEmS5Inon+v1ei36X2Xf0vS1Z7uX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13X/7PIn0nSNCXpDwO6+D2n8fD9AAAAAElFTkSuQmCC";
  
 function validarLogin() {
     const u = document.getElementById('user').value.toLowerCase();
@@ -52,7 +49,7 @@ function initMapPoda() {
             let lat = pos.coords.latitude;
             let lng = pos.coords.longitude;
             actualizarMarcador(lat, lng);
-        });
+        }, () => {}, {enableHighAccuracy: true});
     }
     setTimeout(() => mapP.invalidateSize(), 300);
 }
@@ -83,22 +80,26 @@ function marcarGPS(tipo) {
 }
  
 async function generarPDFPoda() {
-    // Intentamos enviar a la nube sin bloquear el PDF
-    enviarDatosCloudflare();
+    // Intentamos enviar, pero si falla (error 500 o CORS) no bloqueamos el PDF
+    try {
+        enviarDatosCloudflare();
+    } catch(e) {}
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
  
     const aplicarFormatoBase = () => {
+        // Marco
         doc.setDrawColor(0); 
         doc.setLineWidth(0.5); 
         doc.rect(5, 5, 200, 287); 
         doc.line(5, 35, 205, 35); 
         
-        // USAMOS EL LOGO EN BASE64 (Formato PNG)
-        doc.addImage(LOGO_ENEE_BASE64, 'PNG', 10, 8, 45, 22);
-        
+        // REEMPLAZO DE LOGO POR TEXTO PARA EVITAR ERRORES
         doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text("ENEE", 15, 25);
+        
         doc.setFontSize(12);
         doc.text("EMPRESA NACIONAL DE ENERGÍA ELÉCTRICA", 60, 15);
         doc.setFontSize(10);
@@ -123,13 +124,13 @@ async function generarPDFPoda() {
     
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold"); doc.text("CIRCUITO:", 15, 48);
-    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-circuito').value, 55, 48);
+    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-circuito').value || "", 55, 48);
     
     doc.setFont("helvetica", "bold"); doc.text("ZONA DE TRABAJO:", 15, 54);
-    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-zona').value, 55, 54);
+    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-zona').value || "", 55, 54);
     
     doc.setFont("helvetica", "bold"); doc.text("FECHA:", 15, 60);
-    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-fecha').value, 55, 60);
+    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-fecha').value || "", 55, 60);
     
     doc.setFont("helvetica", "bold"); doc.text("TRABAJO EJECUTADO:", 15, 66);
     doc.setFont("helvetica", "normal"); 
@@ -146,10 +147,12 @@ async function generarPDFPoda() {
     const fGrupo = await leerFoto('f-grupo');
     const fVehiculo = await leerFoto('f-vehiculo');
  
-    if (fGrupo && fVehiculo) {
+    if (fGrupo) {
         doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA GRUPAL:", 15, 95);
         doc.addImage(fGrupo, 'JPEG', 15, 100, 180, 85);
         doc.rect(15, 100, 180, 85);
+    }
+    if (fVehiculo) {
         doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA VEHÍCULO:", 15, 195);
         doc.addImage(fVehiculo, 'JPEG', 15, 200, 180, 85);
         doc.rect(15, 200, 180, 85);
@@ -209,16 +212,12 @@ function enviarDatosCloudflare() {
         sector: sectorActivo,
         circuito: document.getElementById('poda-circuito').value,
         zona_trabajo: document.getElementById('poda-zona').value,
-        fecha: document.getElementById('poda-fecha').value,
-        gps_inicio: gpsIni,
-        gps_final: gpsFin,
         fecha_envio: new Date().toISOString()
     };
-    // El modo 'no-cors' permite enviar aunque el servidor no responda OK
     fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
         method: "POST",
         mode: "no-cors", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-    }).catch(() => { console.log("Cloudflare Error: Ignorado para permitir PDF"); }); 
+    }).catch(() => {}); 
 }
