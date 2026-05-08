@@ -3,61 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENEE - Poda Comunitaria</title>
-
+    <title>ENEE - UTCD Poda Comunitaria</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-
 <body>
 
-<!-- SECCIÓN DE LOGIN -->
 <div id="login-container" class="container">
     <header>
         <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" 
         alt="ENEE" style="height: 80px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-        <h1>Acceso al Sistema</h1>
+        <h1>Acceso al Sistema UTCD</h1>
     </header>
     <div class="card" style="cursor: default; padding: 20px;">
-        <label>Usuario:</label>
-        <input type="text" id="user" placeholder="Ingrese su usuario">
+        <label>Sector:</label>
+        <select id="user-sector">
+            <option value="ADMIN">ADMINISTRADOR CENTRAL</option>
+            <option value="BRUS LAGUNA">BRUS LAGUNA</option>
+            <option value="CHOLUTECA">CHOLUTECA</option>
+            <option value="COMAYAGUA">COMAYAGUA</option>
+            <option value="DANLI">DANLI</option>
+            <option value="EL PROGRESO">EL PROGRESO</option>
+            <option value="JUTICALPA">JUTICALPA</option>
+            <option value="LA CEIBA">LA CEIBA</option>
+            <option value="SAN PEDRO SULA">SAN PEDRO SULA</option>
+            <option value="SANTA BARBARA">SANTA BARBARA</option>
+            <option value="SANTA ROSA">SANTA ROSA</option>
+            <option value="SANTA CRUZ">SANTA CRUZ</option>
+            <option value="TEGUCIGALPA">TEGUCIGALPA</option>
+            <option value="TOCOA">TOCOA</option>
+        </select>
         <label>Contraseña:</label>
-        <input type="password" id="pass" placeholder="Ingrese su contraseña">
+        <input type="password" id="pass" placeholder="Contraseña de sector">
         <button class="btn-enviar" onclick="validarLogin()">INGRESAR</button>
         <p id="login-error" style="color: #e74c3c; font-size: 0.8rem; margin-top: 10px; display: none;">Credenciales incorrectas</p>
     </div>
 </div>
 
-<!-- SECCIÓN DEL FORMULARIO (OCULTA POR DEFECTO) -->
 <div id="form-poda-container" class="container" style="display: none;">
     <header>
         <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg"
-        alt="ENEE"
-        style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-        <h1>SECTOR JUTICALPA - PODA COMUNITARIA</h1>
+        alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+        <h1 id="header-sector-title">PODA COMUNITARIA</h1>
         <p id="user-display" style="color: var(--accent); font-weight: bold; font-size: 0.8rem;"></p>
-        <p>Desarrollador - Josué Ortiz</p>
     </header>
 
     <form id="form-poda">
-        <label>Circuito:</label>
+        <label>Datos Generales:</label>
         <select id="poda-circuito">
-            <option>JUT-L379</option><option>JUT-L380</option><option>JUT-L381</option>
-            <option>JUT-L382</option><option>CAT-L375</option><option>CAT-L376</option>
-            <option>GMC-L377 RS CAMPAMENTO</option>
-        </select>
-
-        <label>Zona de Trabajo:</label>
-        <input type="text" id="poda-zona">
-
-        <label>Fecha:</label>
+            <option>CIRCUITO 1</option><option>CIRCUITO 2</option>
+            </select>
+        <input type="text" id="poda-zona" placeholder="Zona de Trabajo">
         <input type="date" id="poda-fecha">
 
         <div class="grid-2">
-            <div><label>Hora Inicio:</label><input type="time" id="h-ini"></div>
-            <div><label>Hora Final:</label><input type="time" id="h-fin"></div>
+            <input type="time" id="h-ini">
+            <input type="time" id="h-fin">
         </div>
 
         <label>Trabajo ejecutado:</label>
@@ -67,30 +70,36 @@
             <input type="number" id="m-postes" placeholder="Postes">
         </div>
 
-        <label>Personal y Pagos:</label>
-        <input type="number" id="poda-personas" placeholder="Personas Contratadas">
-
-        <div class="grid-2">
-            <input type="number" id="pago-mo" placeholder="Mano de Obra (L)">
-            <input type="number" id="pago-trans" placeholder="Transporte (L)">
-        </div>
-
-        <label>Responsables:</label>
+        <label>Personal y Responsables:</label>
+        <input type="number" id="poda-personas" placeholder="Cantidad Personas">
         <input type="text" id="resp-super" placeholder="Responsable Supervisión">
-        <input type="text" id="resp-activ" placeholder="Responsable Actividades Contratista">
+        <input type="text" id="resp-activ" placeholder="Responsable Contratista">
 
-        <label>Fotos Grupo e Identidades:</label>
-        <p style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">* Se sugiere tomar fotos en formato horizontal para Grupo y Vehículo.</p>
-        <div class="grid-2" style="margin-bottom: 8px;">
+        <label>Fotos Principales (Horizontales sugeridas):</label>
+        <div class="grid-2">
             <div class="foto-input-group">
-                <span>GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
+                <span>FOTO GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
                 <div id="p-f-grupo" class="preview-box"></div>
             </div>
             <div class="foto-input-group">
-                <span>VEHÍCULO</span><input type="file" id="f-vehiculo" onchange="previsualizar(this, 'p-f-vehiculo')">
+                <span>FOTO VEHÍCULO</span><input type="file" id="f-vehiculo" onchange="previsualizar(this, 'p-f-vehiculo')">
                 <div id="p-f-vehiculo" class="preview-box"></div>
             </div>
         </div>
+
+        <label>Líder de Cuadrilla:</label>
+        <div class="grid-2">
+            <div class="foto-input-group">
+                <span>DNI FRONTAL LÍDER</span><input type="file" id="f-lider-f" onchange="previsualizar(this, 'p-f-lider-f')">
+                <div id="p-f-lider-f" class="preview-box"></div>
+            </div>
+            <div class="foto-input-group">
+                <span>DNI REVÉS LÍDER</span><input type="file" id="f-lider-r" onchange="previsualizar(this, 'p-f-lider-r')">
+                <div id="p-f-lider-r" class="preview-box"></div>
+            </div>
+        </div>
+
+        <label>Identidad Beneficiario:</label>
         <div class="grid-2">
             <div class="foto-input-group">
                 <span>DNI FRENTE</span><input type="file" id="f-id-f" onchange="previsualizar(this, 'p-f-idf')">
@@ -102,49 +111,30 @@
             </div>
         </div>
 
-        <label>Fotos Antes:</label>
+        <label>Fotos de Campo (Antes/Durante/Después):</label>
         <div class="grid-3">
-            <div class="foto-input-group"><input type="file" id="f-ini-1" onchange="previsualizar(this, 'p-ini-1')"><div id="p-ini-1" class="preview-box"></div></div>
-            <div class="foto-input-group"><input type="file" id="f-ini-2" onchange="previsualizar(this, 'p-ini-2')"><div id="p-ini-2" class="preview-box"></div></div>
-            <div class="foto-input-group"><input type="file" id="f-ini-3" onchange="previsualizar(this, 'p-ini-3')"><div id="p-ini-3" class="preview-box"></div></div>
+            <input type="file" id="f-ini-1" onchange="previsualizar(this, 'p-ini-1')">
+            <input type="file" id="f-ini-2" onchange="previsualizar(this, 'p-ini-2')">
+            <input type="file" id="f-ini-3" onchange="previsualizar(this, 'p-ini-3')">
         </div>
-
-        <label>Fotos Durante:</label>
-        <div class="grid-3">
-            <div class="foto-input-group"><input type="file" id="f-eje-1" onchange="previsualizar(this, 'p-eje-1')"><div id="p-eje-1" class="preview-box"></div></div>
-            <div class="foto-input-group"><input type="file" id="f-eje-2" onchange="previsualizar(this, 'p-eje-2')"><div id="p-eje-2" class="preview-box"></div></div>
-            <div class="foto-input-group"><input type="file" id="f-eje-3" onchange="previsualizar(this, 'p-eje-3')"><div id="p-eje-3" class="preview-box"></div></div>
-        </div>
-
-        <label>Fotos Después:</label>
-        <div class="grid-3">
-            <div class="foto-input-group"><input type="file" id="f-fin-1" onchange="previsualizar(this, 'p-fin-1')"><div id="p-fin-1" class="preview-box"></div></div>
-            <div class="foto-input-group"><input type="file" id="f-fin-2" onchange="previsualizar(this, 'p-fin-2')"><div id="p-fin-2" class="preview-box"></div></div>
-            <div class="foto-input-group"><input type="file" id="f-fin-3" onchange="previsualizar(this, 'p-fin-3')"><div id="p-fin-3" class="preview-box"></div></div>
-        </div>
-
-        <label>GPS (Satelital):</label>
+        <label>GPS:</label>
         <div id="map-poda" style="height: 180px; border-radius: 8px;"></div>
-        
         <div class="grid-2">
-            <input type="text" id="manual-lat" placeholder="Latitud Manual">
-            <input type="text" id="manual-lng" placeholder="Longitud Manual">
+            <input type="text" id="manual-lat" placeholder="Latitud">
+            <input type="text" id="manual-lng" placeholder="Longitud">
         </div>
-        <button type="button" class="btn-secundario" style="margin-top: 5px;" onclick="ingresarManual()">USAR COORDENADA MANUAL</button>
+        <button type="button" class="btn-secundario" onclick="ingresarManual()">FIJAR COORDENADA MANUAL</button>
 
         <div class="grid-2">
-            <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">GPS INICIO</button>
-            <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">GPS FINAL</button>
+            <button type="button" class="btn-secundario" onclick="marcarGPS('ini')">INICIO</button>
+            <button type="button" class="btn-secundario" onclick="marcarGPS('fin')">FINAL</button>
         </div>
 
-        <p class="coords-text" id="coords-display">Inicio: -- | Fin: --</p>
-
-        <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME PODA</button>
+        <button type="button" class="btn-enviar" onclick="generarPDFPoda()">GENERAR INFORME TÉCNICO</button>
     </form>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
