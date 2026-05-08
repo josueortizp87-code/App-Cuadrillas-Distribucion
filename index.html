@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -50,12 +49,12 @@
 
     <form id="form-poda">
         <label>CIRCUITO:</label>
-        <input type="text" id="poda-circuito" placeholder="Escriba el circuito (ej. JUT-L379)">
+        <input type="text" id="poda-circuito" placeholder="Escriba el circuito">
         
         <label>ZONA DE TRABAJO:</label>
         <input type="text" id="poda-zona">
 
-        <label>FECHA:</label>
+        <label>FECHA DE TRABAJO:</label>
         <input type="date" id="poda-fecha">
 
         <div class="grid-2">
@@ -72,10 +71,10 @@
 
         <label>RESPONSABLES:</label>
         <input type="text" id="resp-super" placeholder="Responsable Supervisión">
-        <input type="text" id="resp-activ" placeholder="Responsable Contratista">
+        <input type="text" id="resp-activ" placeholder="Líder de Cuadrilla">
         <input type="number" id="poda-personas" placeholder="Cantidad de Personas">
 
-        <label>FOTOS PRINCIPALES (GRUPO Y VEHÍCULO):</label>
+        <label>FOTOS PRINCIPALES:</label>
         <div class="grid-2">
             <div class="foto-input-group">
                 <span>FOTO GRUPO</span><input type="file" id="f-grupo" onchange="previsualizar(this, 'p-f-grupo')">
@@ -128,8 +127,8 @@
             <div class="foto-input-group"><span>DESPUÉS 3</span><input type="file" id="f-f3" onchange="previsualizar(this, 'p-f3')"><div id="p-f3" class="preview-box"></div></div>
         </div>
 
-        <label>GPS:</label>
-        <div id="map-poda" style="height: 180px; border-radius: 8px; margin-bottom: 10px;"></div>
+        <label>MAPA GPS:</label>
+        <div id="map-poda" style="height: 200px; border-radius: 8px; margin-bottom: 10px;"></div>
         <div class="grid-2">
             <input type="text" id="lat-m" placeholder="Latitud">
             <input type="text" id="lng-m" placeholder="Longitud">
@@ -137,12 +136,12 @@
         <button type="button" class="btn-secundario" onclick="setManual()">FIJAR GPS MANUAL</button>
 
         <div class="grid-2">
-            <button type="button" class="btn-secundario" onclick="marcar('ini')">INICIO</button>
-            <button type="button" class="btn-secundario" onclick="marcar('fin')">FINAL</button>
+            <button type="button" class="btn-secundario" onclick="marcar('ini')">COORD. INICIAL</button>
+            <button type="button" class="btn-secundario" onclick="marcar('fin')">COORD. FINAL</button>
         </div>
         <p id="c-txt" class="coords-text">Inicio: -- | Fin: --</p>
 
-        <button type="button" class="btn-enviar" onclick="crearPDF()">GENERAR REPORTE PDF</button>
+        <button type="button" class="btn-enviar" onclick="crearPDF()">GENERAR INFORME PDF</button>
     </form>
 </div>
 
