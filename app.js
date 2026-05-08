@@ -1,22 +1,30 @@
-/* =============================
+/* =================================================
    VARIABLES GLOBALES
-============================= */
+================================================= */
 var mapP, markerP;
-
 var gpsIni = "No marcado", gpsFin = "No marcado";
 var latIni = null, lngIni = null;
 var latFin = null, lngFin = null;
 
-// Usuario / sector (temporal – luego se hará dinámico)
+// Sector asignado al usuario (temporal)
 let sectorUsuario = "COMAYAGUA";
 
-/* =============================
-   LOGIN BÁSICO
-============================= */
-const USUARIOS = {
-    "admin": "admin123",
-    "supervisor": "super123"
-};
+/* =================================================
+   LOGO ENEE (BASE64)
+================================================= */
+/*
+PASO IMPORTANTE:
+1. Abre el logo ENEE en https://base64.guru/converter/encode/image
+2. Copia SOLO la cadena Base64
+3. Reemplaza el contenido de LOGO_ENEE_BASE64
+*/
+const LOGO_ENEE_BASE64 =
+"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."; // EJEMPLO
+
+/* =================================================
+   LOGIN
+================================================= */
+const USUARIOS = { admin: "admin123", supervisor: "super123" };
 
 function validarLogin() {
     const u = document.getElementById('user').value;
@@ -34,26 +42,23 @@ function validarLogin() {
     }
 }
 
-/* =============================
-   MAPA ESRI SATELITAL + GPS
-============================= */
+/* =================================================
+   MAPA ESRI
+================================================= */
 function initMapPoda() {
     if (mapP) mapP.remove();
 
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
-
     L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        { attribution: 'Tiles © Esri' }
+        { attribution: '© Esri' }
     ).addTo(mapP);
 
     markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            actualizarMarcador(pos.coords.latitude, pos.coords.longitude);
-        });
-    }
+    navigator.geolocation?.getCurrentPosition(pos =>
+        actualizarMarcador(pos.coords.latitude, pos.coords.longitude)
+    );
 
     setTimeout(() => mapP.invalidateSize(), 300);
 }
@@ -63,155 +68,114 @@ function actualizarMarcador(lat, lng) {
     markerP.setLatLng([lat, lng]);
 }
 
-function ingresarManual() {
-    const lat = parseFloat(document.getElementById('manual-lat').value);
-    const lng = parseFloat(document.getElementById('manual-lng').value);
-
-    if (!isNaN(lat) && !isNaN(lng)) {
-        actualizarMarcador(lat, lng);
-    } else {
-        alert("Ingrese coordenadas válidas");
-    }
-}
-
-function marcarGPS(tipo) {
-    const p = markerP.getLatLng();
-    const lat = Number(p.lat.toFixed(6));
-    const lng = Number(p.lng.toFixed(6));
-    const c = lat + ", " + lng;
-
-    if (tipo === 'ini') {
-        gpsIni = c;
-        latIni = lat;
-        lngIni = lng;
-    } else {
-        gpsFin = c;
-        latFin = lat;
-        lngFin = lng;
-    }
-
-    document.getElementById('coords-display').innerText =
-        `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
-}
-
-/* =============================
-   ENCABEZADO INSTITUCIONAL PDF
-============================= */
+/* =================================================
+   ENCABEZADO UTCD INSTITUCIONAL
+================================================= */
 function dibujarEncabezadoPDF(doc) {
     const pageWidth = doc.internal.pageSize.getWidth();
-    const headerHeight = 25;
+    const headerY = 10;
+    const headerH = 28;
 
-    // Marco general
-    doc.setLineWidth(0.5);
-    doc.rect(10, 10, pageWidth - 20, headerHeight);
+    // Cajetín izquierdo (LOGO)
+    doc.rect(10, headerY, 40, headerH);
+    doc.addImage(LOGO_ENEE_BASE64, "PNG", 12, headerY + 4, 32, 20);
 
-    // Logo / UTCD (texto por ahora)
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("UTCD", 14, 20);
-
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.text("Unidad Técnica de Control", 14, 24);
-
-    // Título central
+    // Cajetín central (INFORME)
+    doc.rect(50, headerY, pageWidth - 120, headerH);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(
-        "INFORME DE PODA COMUNITARIA",
-        pageWidth / 2,
-        18,
-        { align: "center" }
-    );
-
+    doc.text("INFORME DE PODA COMUNITARIA", pageWidth / 2, headerY + 12, { align: "center" });
     doc.setFontSize(10);
-    doc.text(
-        `SECTOR ${sectorUsuario}`,
-        pageWidth / 2,
-        23,
-        { align: "center" }
-    );
+    doc.text(`SECTOR ${sectorUsuario}`, pageWidth / 2, headerY + 20, { align: "center" });
 
-    // Cajetín derecho
-    const boxX = pageWidth - 60;
-    doc.rect(boxX, 10, 50, headerHeight);
-
+    // Cajetín derecho (CONTROL)
+    const ctrlX = pageWidth - 60;
+    doc.rect(ctrlX, headerY, 50, headerH);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.text("Código:", boxX + 2, 15);
-    doc.text("Versión: 1", boxX + 2, 20);
-    doc.text("Fecha:", boxX + 2, 25);
+    doc.text("Código:", ctrlX + 3, headerY + 8);
+    doc.text("Versión: 1", ctrlX + 3, headerY + 15);
+    doc.text("Fecha:", ctrlX + 3, headerY + 22);
 }
 
-/* =============================
-   GENERAR PDF PRO (BASE)
-============================= */
-async function generarPDFPoda() {
+/* =================================================
+   AYUDA: DIBUJAR IMAGEN SIN DISTORSIÓN
+================================================= */
+function agregarImagenProporcional(doc, imgData, x, y, maxW, maxH) {
+    const props = doc.getImageProperties(imgData);
+    const ratio = props.width / props.height;
 
+    let w = maxW;
+    let h = w / ratio;
+
+    if (h > maxH) {
+        h = maxH;
+        w = h * ratio;
+    }
+
+    doc.addImage(imgData, "JPEG", x, y, w, h);
+    doc.rect(x, y, w, h);
+}
+
+/* =================================================
+   GENERAR PDF — HOJA 1 PROFESIONAL
+================================================= */
+async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // ======== PÁGINA 1 ========
     dibujarEncabezadoPDF(doc);
 
-    const startY = 45;
-
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-
-    doc.text("Circuito:", 15, startY);
-    doc.text("Zona de trabajo:", 15, startY + 6);
-    doc.text("Fecha:", 15, startY + 12);
-    doc.text("Hora:", 15, startY + 18);
-    doc.text("GPS:", 15, startY + 24);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(document.getElementById('poda-circuito').value, 45, startY);
-    doc.text(document.getElementById('poda-zona').value, 45, startY + 6);
-    doc.text(document.getElementById('poda-fecha').value, 45, startY + 12);
-    doc.text(
-        `${document.getElementById('h-ini').value} - ${document.getElementById('h-fin').value}`,
-        45,
-        startY + 18
-    );
-    doc.text(`Inicio ${gpsIni} / Fin ${gpsFin}`, 45, startY + 24);
-
-    doc.rect(12, startY - 5, 185, 35);
-
-    // ===== FOTOS GRUPO / VEHÍCULO =====
-    const leerFoto = (id) => {
-        const file = document.getElementById(id).files[0];
-        if (!file) return null;
-        return new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = e => resolve(e.target.result);
-            reader.readAsDataURL(file);
+    const leerFoto = id => {
+        const f = document.getElementById(id).files[0];
+        if (!f) return null;
+        return new Promise(res => {
+            const r = new FileReader();
+            r.onload = e => res(e.target.result);
+            r.readAsDataURL(f);
         });
     };
 
-    const fGrupo = await leerFoto('f-grupo');
-    const fVehiculo = await leerFoto('f-vehiculo');
+    const fGrupo = await leerFoto("f-grupo");
+    const fVehiculo = await leerFoto("f-vehiculo");
 
     if (!fGrupo) {
         alert("La foto GRUPO es obligatoria.");
         return;
     }
 
-    let fotoY = startY + 40;
+    const baseY = 45;
+
+    // Cuadro de información
+    doc.setFont("helvetica", "bold");
+    doc.text("Circuito:", 15, baseY);
+    doc.text("Zona:", 15, baseY + 6);
+    doc.text("Fecha:", 15, baseY + 12);
+    doc.text("Hora:", 15, baseY + 18);
+    doc.text("GPS:", 15, baseY + 24);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(poda-circuito.value, 45, baseY);
+    doc.text(poda-zona.value, 45, baseY + 6);
+    doc.text(poda-fecha.value, 45, baseY + 12);
+    doc.text(h-ini.value + " - " + h-fin.value, 45, baseY + 18);
+    doc.text("Inicio " + gpsIni + " / Fin " + gpsFin, 45, baseY + 24);
+
+    doc.rect(12, baseY - 5, 185, 35);
+
+    // Fotos
+    let fotosY = baseY + 40;
 
     doc.setFont("helvetica", "bold");
-    doc.text("EVIDENCIA GRUPAL", 15, fotoY);
-    doc.addImage(fGrupo, 'JPEG', 15, fotoY + 5, 180, fVehiculo ? 40 : 80);
-    doc.rect(15, fotoY + 5, 180, fVehiculo ? 40 : 80);
+    doc.text("EVIDENCIA GRUPAL", 15, fotosY);
+    agregarImagenProporcional(doc, fGrupo, 15, fotosY + 5, 180, fVehiculo ? 38 : 80);
 
     if (fVehiculo) {
-        let vehY = fotoY + 55;
-        doc.text("EVIDENCIA VEHÍCULO", 15, vehY);
-        doc.addImage(fVehiculo, 'JPEG', 15, vehY + 5, 180, 40);
-        doc.rect(15, vehY + 5, 180, 40);
+        let vY = fotosY + 48;
+        doc.text("EVIDENCIA VEHÍCULO", 15, vY);
+        agregarImagenProporcional(doc, fVehiculo, 15, vY + 5, 180, 38);
     }
 
-    // ===== Guardar PDF =====
     doc.save("Informe_Poda_Final.pdf");
 }
 
