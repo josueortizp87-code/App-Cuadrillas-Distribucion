@@ -80,33 +80,69 @@ function marcarGPS(tipo) {
 }
  
 async function generarPDFPoda() {
-    // Intentamos enviar, pero si falla (error 500 o CORS) no bloqueamos el PDF
-    try {
-        enviarDatosCloudflare();
-    } catch(e) {}
+    try { enviarDatosCloudflare(); } catch(e) {}
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
- 
-    const aplicarFormatoBase = () => {
-        // Marco
-        doc.setDrawColor(0); 
-        doc.setLineWidth(0.5); 
-        doc.rect(5, 5, 200, 287); 
-        doc.line(5, 35, 205, 35); 
-        
-        // REEMPLAZO DE LOGO POR TEXTO PARA EVITAR ERRORES
+    
+    // Función para dibujar el cajetín técnico
+    const dibujarCajetinSencillo = (yOffset) => {
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.3);
+
+        // --- ENCABEZADO ---
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.text("ENEE", 15, 25);
+        doc.text("ENEE", 15, yOffset + 15); // Logo de texto
         
-        doc.setFontSize(12);
-        doc.text("EMPRESA NACIONAL DE ENERGÍA ELÉCTRICA", 60, 15);
         doc.setFontSize(10);
-        doc.text("INFORME DE PODA COMUNITARIA", 60, 22);
-        doc.text("SECTOR: " + sectorActivo, 60, 28);
+        doc.text("EMPRESA NACIONAL DE ENERGÍA ELÉCTRICA", 65, yOffset + 10);
+        doc.text("INFORME DE PODA COMUNITARIA", 65, yOffset + 17);
+        doc.text("SECTOR: " + sectorActivo, 65, yOffset + 24);
+        
+        // Línea divisoria debajo del encabezado
+        doc.line(10, yOffset + 30, 200, yOffset + 30);
+
+        // --- TABLA DE DATOS DEL SITIO ---
+        let currentY = yOffset + 35;
+        const lineH = 7; // Altura de fila
+
+        const drawRow = (label, value, xPos, width, isBold = false) => {
+            doc.setFont("helvetica", "bold");
+            doc.text(label, xPos + 2, currentY + 5);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(value), xPos + 45, currentY + 5);
+            doc.rect(xPos, currentY, width, lineH);
+        };
+
+        // Fila 1: Circuito y Zona
+        drawRow("CIRCUITO:", document.getElementById('poda-circuito').value, 10, 95);
+        drawRow("ZONA TRABAJO:", document.getElementById('poda-zona').value, 105, 95);
+        currentY += lineH;
+
+        // Fila 2: Fecha (EN BLANCO) y Horarios
+        drawRow("FECHA:", "", 10, 95); // Campo en blanco solicitado
+        drawRow("HORARIO:", `INICIO: ${document.getElementById('h-ini').value} / FIN: ${document.getElementById('h-fin').value}`, 105, 95);
+        currentY += lineH;
+
+        // Fila 3: Trabajo Ejecutado
+        const trabajo = `Brecha: ${document.getElementById('m-brecha').value}m | Poda: ${document.getElementById('m-poda').value}m | Postes: ${document.getElementById('m-postes').value}`;
+        drawRow("EJECUTADO:", trabajo, 10, 190);
+        currentY += lineH;
+
+        // Fila 4: Personal y Pagos (LO QUE SOLICITASTE)
+        const pagos = `Personas: ${document.getElementById('poda-personas').value} | M.O: L. ${document.getElementById('pago-mo').value} | Transp: L. ${document.getElementById('pago-trans').value}`;
+        drawRow("PERSONAL/PAGO:", pagos, 10, 190);
+        currentY += lineH;
+
+        // Fila 5: Responsables y GPS
+        drawRow("RESPONSABLES:", `${document.getElementById('resp-super').value} / ${document.getElementById('resp-activ').value}`, 10, 190);
+        currentY += lineH;
+        drawRow("GPS:", `INICIO: ${gpsIni} | FIN: ${gpsFin}`, 10, 190);
+        
+        return currentY + 10; // Retorna la posición para las fotos
     };
- 
+
     const leerFoto = (id) => {
         const file = document.getElementById(id).files[0];
         if (!file) return null;
@@ -116,78 +152,60 @@ async function generarPDFPoda() {
             reader.readAsDataURL(file);
         });
     };
- 
+
     // --- PAGINA 1 ---
-    aplicarFormatoBase();
-    doc.setDrawColor(40);
-    doc.rect(10, 40, 190, 45); 
-    
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold"); doc.text("CIRCUITO:", 15, 48);
-    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-circuito').value || "", 55, 48);
-    
-    doc.setFont("helvetica", "bold"); doc.text("ZONA DE TRABAJO:", 15, 54);
-    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-zona').value || "", 55, 54);
-    
-    doc.setFont("helvetica", "bold"); doc.text("FECHA:", 15, 60);
-    doc.setFont("helvetica", "normal"); doc.text(document.getElementById('poda-fecha').value || "", 55, 60);
-    
-    doc.setFont("helvetica", "bold"); doc.text("TRABAJO EJECUTADO:", 15, 66);
-    doc.setFont("helvetica", "normal"); 
-    doc.text(`Brecha: ${document.getElementById('m-brecha').value}m | Poda: ${document.getElementById('m-poda').value}m | Postes: ${document.getElementById('m-postes').value}`, 55, 66);
-    
-    doc.setFont("helvetica", "bold"); doc.text("RESPONSABLES:", 15, 72);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Supervisor: ${document.getElementById('resp-super').value} | Contr: ${document.getElementById('resp-activ').value}`, 55, 72);
-    
-    doc.setFont("helvetica", "bold"); doc.text("GPS:", 15, 78);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Inicio: ${gpsIni} / Fin: ${gpsFin}`, 55, 78);
+    let nextY = dibujarCajetinSencillo(5);
  
     const fGrupo = await leerFoto('f-grupo');
     const fVehiculo = await leerFoto('f-vehiculo');
  
     if (fGrupo) {
-        doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA GRUPAL:", 15, 95);
-        doc.addImage(fGrupo, 'JPEG', 15, 100, 180, 85);
-        doc.rect(15, 100, 180, 85);
+        doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA GRUPAL:", 15, nextY);
+        doc.addImage(fGrupo, 'JPEG', 15, nextY + 5, 180, 85);
+        doc.rect(15, nextY + 5, 180, 85);
+        nextY += 95;
     }
     if (fVehiculo) {
-        doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA VEHÍCULO:", 15, 195);
-        doc.addImage(fVehiculo, 'JPEG', 15, 200, 180, 85);
-        doc.rect(15, 200, 180, 85);
+        doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA VEHÍCULO:", 15, nextY);
+        doc.addImage(fVehiculo, 'JPEG', 15, nextY + 5, 180, 85);
+        doc.rect(15, nextY + 5, 180, 85);
     }
  
+    // Páginas de Identidades y Fotos (Antes/Durante/Después)
+    // ... (Se mantiene igual que el código anterior)
+    
+    // Identidades
     const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
     for(let p of idsPersonal){
         const img = await leerFoto(p.id);
         if(img) {
-            doc.addPage(); 
-            aplicarFormatoBase();
-            doc.setFont("helvetica", "bold"); doc.text(p.t, 15, 45);
-            doc.addImage(img, 'JPEG', 10, 50, 190, 230); 
-            doc.rect(10, 50, 190, 230);
+            doc.addPage();
+            doc.setFont("helvetica", "bold"); doc.text(p.t, 15, 20);
+            doc.addImage(img, 'JPEG', 15, 25, 180, 250); 
+            doc.rect(15, 25, 180, 250);
         }
     }
- 
-    doc.addPage(); 
-    aplicarFormatoBase();
+
+    // Fotos Proceso
+    doc.addPage();
+    doc.setFont("helvetica", "bold"); doc.text("REGISTRO FOTOGRÁFICO DE PODA", 15, 20);
     const secciones = [
-        {t:"FOTOS ANTES", ids:['f-ini-1','f-ini-2','f-ini-3']},
-        {t:"FOTOS DURANTE", ids:['f-eje-1','f-eje-2','f-eje-3']},
-        {t:"FOTOS DESPUÉS", ids:['f-fin-1','f-fin-2','f-fin-3']}
+        {t:"ANTES", ids:['f-ini-1','f-ini-2','f-ini-3']},
+        {t:"DURANTE", ids:['f-eje-1','f-eje-2','f-eje-3']},
+        {t:"DESPUÉS", ids:['f-fin-1','f-fin-2','f-fin-3']}
     ];
-    let y = 45;
+    let yImg = 30;
     for(let s of secciones){
-        doc.setFont("helvetica", "bold"); doc.text(s.t, 15, y); 
-        y+=5; let x = 10;
+        doc.setFontSize(10); doc.text(s.t, 15, yImg);
+        yImg += 5; let xImg = 10;
         for(let id of s.ids){
             const img = await leerFoto(id);
-            if(img){ doc.addImage(img, 'JPEG', x, y, 62, 70); doc.rect(x, y, 62, 70); }
-            x+=64;
+            if(img){ doc.addImage(img, 'JPEG', xImg, yImg, 62, 70); doc.rect(xImg, yImg, 62, 70); }
+            xImg += 64;
         }
-        y+=75;
+        yImg += 75;
     }
+
     doc.save(`Informe_Poda_${sectorActivo}.pdf`);
 }
  
