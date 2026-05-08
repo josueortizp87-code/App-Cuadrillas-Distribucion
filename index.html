@@ -21,10 +21,25 @@
         <h1>Acceso al Sistema</h1>
     </header>
     <div class="card" style="cursor: default; padding: 20px;">
-        <label>Usuario:</label>
-        <input type="text" id="user" placeholder="Ingrese su usuario">
+        <label>Sector:</label>
+        <select id="user-sector">
+            <option value="ADMIN">ADMINISTRADOR CENTRAL</option>
+            <option value="BRUS LAGUNA">BRUS LAGUNA</option>
+            <option value="CHOLUTECA">CHOLUTECA</option>
+            <option value="COMAYAGUA">COMAYAGUA</option>
+            <option value="DANLI">DANLI</option>
+            <option value="EL PROGRESO">EL PROGRESO</option>
+            <option value="JUTICALPA">JUTICALPA</option>
+            <option value="LA CEIBA">LA CEIBA</option>
+            <option value="SAN PEDRO SULA">SAN PEDRO SULA</option>
+            <option value="SANTA BARBARA">SANTA BARBARA</option>
+            <option value="SANTA ROSA">SANTA ROSA</option>
+            <option value="SANTA CRUZ">SANTA CRUZ</option>
+            <option value="TEGUCIGALPA">TEGUCIGALPA</option>
+            <option value="TOCOA">TOCOA</option>
+        </select>
         <label>Contraseña:</label>
-        <input type="password" id="pass" placeholder="Ingrese su contraseña">
+        <input type="password" id="pass" placeholder="Contraseña de sector">
         <button class="btn-enviar" onclick="validarLogin()">INGRESAR</button>
         <p id="login-error" style="color: #e74c3c; font-size: 0.8rem; margin-top: 10px; display: none;">Credenciales incorrectas</p>
     </div>
