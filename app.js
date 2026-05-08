@@ -1,4 +1,5 @@
 var map, marker, gIni = "--", gFin = "--", sector = "";
+const logoUrl = "https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg";
 
 function validarLogin() {
     const s = document.getElementById('user-sector').value;
@@ -43,11 +44,10 @@ function drawHeader(doc, s) {
     doc.line(140, 24, 200, 24); // Divisor Versión
     doc.line(165, 10, 165, 30); // Divisor etiquetas internas
 
-    // Logo ENEE (URL pública del logo)
-    const logo = "https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg";
-    doc.setFont("helvetica", "bold"); doc.setFontSize(8);
-    doc.text("UTCD", 37, 20, {align:"center"});
+    // 1. LOGO EN EL CAJETÍN (En lugar de texto UTCD)
+    doc.addImage(logoUrl, 'SVG', 15, 12, 45, 15);
     
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text("INFORME DE PODA COMUNITARIA", 102, 18, {align:"center"});
     doc.text("SECTOR " + s, 102, 23, {align:"center"});
@@ -55,7 +55,7 @@ function drawHeader(doc, s) {
     doc.setFontSize(7);
     doc.text("Código", 142, 15);
     doc.text("Versión", 142, 22); doc.text("1", 182, 22);
-    doc.text("Fecha", 142, 28); doc.text(new Date().toLocaleDateString(), 170, 28);
+    doc.text("Fecha", 142, 28); // LA FECHA SE DEJA EN BLANCO SEGÚN SOLICITUD
 }
 
 async function crearPDF() {
@@ -69,15 +69,16 @@ async function crearPDF() {
 
     // PÁGINA 1: DATOS Y PRINCIPALES
     drawHeader(doc, sector);
-    doc.setFontSize(9); doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
     doc.rect(15, 35, 180, 45); // Cuadro de información
     
+    // 2. CORRECCIÓN: SE INCLUYE LA FECHA EN EL CUADRO DE INFORMACIÓN
     let info = [
         ["CIRCUITO:", document.getElementById('poda-circuito').value, "SUPERVISOR:", document.getElementById('resp-super').value],
         ["ZONA:", document.getElementById('poda-zona').value, "LÍDER:", document.getElementById('resp-activ').value],
         ["FECHA:", document.getElementById('poda-fecha').value, "PERSONAS:", document.getElementById('poda-personas').value],
-        ["GPS INI:", gIni, "GPS FIN:", gFin],
-        ["TRABAJO:", `${document.getElementById('m-brecha').value}m Brecha / ${document.getElementById('m-poda').value}m Poda`, "", ""]
+        ["HORARIO:", `${document.getElementById('h-ini').value} - ${document.getElementById('h-fin').value}`, "GPS INI:", gIni],
+        ["TRABAJO:", `${document.getElementById('m-brecha').value}m Brecha / ${document.getElementById('m-poda').value}m Poda`, "GPS FIN:", gFin]
     ];
 
     let yI = 42;
@@ -90,25 +91,37 @@ async function crearPDF() {
     });
 
     const fG = await getB64('f-grupo'), fV = await getB64('f-vehiculo');
-    if(fG) { doc.text("FOTO GRUPO", 105, 88, {align:"center"}); doc.addImage(fG, 'JPEG', 30, 92, 150, 85); doc.rect(30, 92, 150, 85); }
-    if(fV) { doc.text("FOTO VEHÍCULO", 105, 188, {align:"center"}); doc.addImage(fV, 'JPEG', 30, 192, 150, 85); doc.rect(30, 192, 150, 85); }
+    if(fG) { doc.setFont("helvetica", "bold"); doc.text("FOTO GRUPO", 105, 88, {align:"center"}); doc.addImage(fG, 'JPEG', 30, 92, 150, 85); doc.rect(30, 92, 150, 85); }
+    if(fV) { doc.setFont("helvetica", "bold"); doc.text("FOTO VEHÍCULO", 105, 188, {align:"center"}); doc.addImage(fV, 'JPEG', 30, 192, 150, 85); doc.rect(30, 192, 150, 85); }
 
     // PÁGINA 2: LÍDER
     const fLF = await getB64('f-lider-f'), fLR = await getB64('f-lider-r');
     if(fLF || fLR) {
         doc.addPage(); drawHeader(doc, sector);
-        doc.setFontSize(12); doc.text("LIDER DE CUADRILLA", 105, 45, {align:"center"});
+        doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("LIDER DE CUADRILLA", 105, 45, {align:"center"});
         if(fLF) { doc.addImage(fLF, 'JPEG', 55, 60, 100, 75); doc.rect(55, 60, 100, 75); }
         if(fLR) { doc.addImage(fLR, 'JPEG', 55, 150, 100, 75); doc.rect(55, 150, 100, 75); }
     }
 
-    // PÁGINA 3: DNI FRENTE
-    const fDF = await getB64('f-id-f');
-    if(fDF) { doc.addPage(); drawHeader(doc, sector); doc.text("IDENTIDAD FRENTE", 105, 45, {align:"center"}); doc.addImage(fDF, 'JPEG', 20, 60, 170, 110); doc.rect(20, 60, 170, 110); }
+    // 3. FOTOS DNI AMPLIADAS (Aproximadamente 1cm de separación del marco)
+    // El marco está en x=10, ancho=190. El alto es 277.
+    // Usaremos x=15, ancho=180 para dejar el margen de 1cm respecto al marco de la hoja.
 
-    // PÁGINA 4: DNI REVÉS
+    const fDF = await getB64('f-id-f');
+    if(fDF) { 
+        doc.addPage(); drawHeader(doc, sector); 
+        doc.setFontSize(12); doc.text("IDENTIDAD FRENTE", 105, 45, {align:"center"}); 
+        doc.addImage(fDF, 'JPEG', 15, 60, 180, 200); // Foto ampliada verticalmente
+        doc.rect(15, 60, 180, 200); 
+    }
+
     const fDR = await getB64('f-id-r');
-    if(fDR) { doc.addPage(); drawHeader(doc, sector); doc.text("IDENTIDAD REVÉS", 105, 45, {align:"center"}); doc.addImage(fDR, 'JPEG', 20, 60, 170, 110); doc.rect(20, 60, 170, 110); }
+    if(fDR) { 
+        doc.addPage(); drawHeader(doc, sector); 
+        doc.text("IDENTIDAD REVÉS", 105, 45, {align:"center"}); 
+        doc.addImage(fDR, 'JPEG', 15, 60, 180, 200); // Foto ampliada verticalmente
+        doc.rect(15, 60, 180, 200); 
+    }
 
     // PÁGINA 5: EVIDENCIA CAMPO (9 FOTOS)
     doc.addPage(); drawHeader(doc, sector);
@@ -130,7 +143,6 @@ async function crearPDF() {
     }
 
     doc.save(`Informe_Poda_${sector}_${document.getElementById('poda-circuito').value}.pdf`);
-    enviarCF();
 }
 
 function previsualizar(input, id) {
@@ -140,40 +152,4 @@ function previsualizar(input, id) {
         r.onload = (e) => { const i = document.createElement('img'); i.src = e.target.result; i.style.width="100%"; i.style.height="100%"; i.style.objectFit="cover"; b.appendChild(i); };
         r.readAsDataURL(input.files[0]);
     }
-}
-
-function enviarDatosCloudflare() {
-    const data = {
-        circuito: document.getElementById('poda-circuito').value,
-        zona_trabajo: document.getElementById('poda-zona').value,
-        fecha: document.getElementById('poda-fecha').value,
-        hora_inicio: document.getElementById('h-ini').value,
-        hora_final: document.getElementById('h-fin').value,
-
-        gps_inicio: gpsIni,
-        gps_final: gpsFin,
-        lat_inicio: latIni,
-        lng_inicio: lngIni,
-        lat_final: latFin,
-        lng_final: lngFin,
-
-        m_brecha: document.getElementById('m-brecha').value,
-        m_poda: document.getElementById('m-poda').value,
-        m_postes: document.getElementById('m-postes').value,
-
-        personas: document.getElementById('poda-personas').value,
-        pago_mo: document.getElementById('pago-mo').value,
-        pago_trans: document.getElementById('pago-trans').value,
-
-        responsable_super: document.getElementById('resp-super').value,
-        responsable_contratista: document.getElementById('resp-activ').value,
-        fecha_envio: new Date().toISOString()
-
-    };
-
-    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    }).catch(() => {}); 
 }
