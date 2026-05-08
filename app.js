@@ -85,62 +85,42 @@ async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Función para dibujar el cajetín técnico
-    const dibujarCajetinSencillo = (yOffset) => {
+    // Función para dibujar el Marco y el Encabezado tipo Excel
+    const dibujarEstructuraInstitucional = () => {
+        // 1. MARCO PERIMETRAL DE LA HOJA
         doc.setDrawColor(0);
+        doc.setLineWidth(0.5);
+        doc.rect(5, 5, 200, 287); // El borde exterior
+
+        // 2. CAJETÍN DEL ENCABEZADO (Cuadrícula superior)
         doc.setLineWidth(0.3);
+        doc.rect(10, 10, 190, 25); // Rectángulo del encabezado
+        
+        // Líneas verticales del encabezado
+        doc.line(60, 10, 60, 35);  // Separa Logo de Título
+        doc.line(150, 10, 150, 35); // Separa Título de Control
+        doc.line(170, 18, 200, 18); // Línea interna Versión
+        doc.line(170, 26, 200, 26); // Línea interna Fecha
+        doc.line(170, 10, 170, 35); // Separa etiquetas de valores en control
 
-        // --- ENCABEZADO ---
+        // 3. TEXTOS DEL ENCABEZADO
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(22);
-        doc.text("ENEE", 15, yOffset + 15); // Logo de texto
-        
-        doc.setFontSize(10);
-        doc.text("EMPRESA NACIONAL DE ENERGÍA ELÉCTRICA", 65, yOffset + 10);
-        doc.text("INFORME DE PODA COMUNITARIA", 65, yOffset + 17);
-        doc.text("SECTOR: " + sectorActivo, 65, yOffset + 24);
-        
-        // Línea divisoria debajo del encabezado
-        doc.line(10, yOffset + 30, 200, yOffset + 30);
+        doc.setFontSize(8);
+        doc.text("UTCD", 15, 15);
+        doc.setFontSize(7);
+        doc.text("UNIDAD TÉCNICA DE CONTROL", 15, 20);
+        doc.text("DE DISTRIBUCIÓN", 15, 24);
 
-        // --- TABLA DE DATOS DEL SITIO ---
-        let currentY = yOffset + 35;
-        const lineH = 7; // Altura de fila
+        doc.setFontSize(11);
+        doc.text("INFORME DE PODA COMUNITARIA", 65, 20);
+        doc.text("SECTOR: " + sectorActivo, 65, 28);
 
-        const drawRow = (label, value, xPos, width, isBold = false) => {
-            doc.setFont("helvetica", "bold");
-            doc.text(label, xPos + 2, currentY + 5);
-            doc.setFont("helvetica", "normal");
-            doc.text(String(value), xPos + 45, currentY + 5);
-            doc.rect(xPos, currentY, width, lineH);
-        };
-
-        // Fila 1: Circuito y Zona
-        drawRow("CIRCUITO:", document.getElementById('poda-circuito').value, 10, 95);
-        drawRow("ZONA TRABAJO:", document.getElementById('poda-zona').value, 105, 95);
-        currentY += lineH;
-
-        // Fila 2: Fecha (EN BLANCO) y Horarios
-        drawRow("FECHA:", "", 10, 95); // Campo en blanco solicitado
-        drawRow("HORARIO:", `INICIO: ${document.getElementById('h-ini').value} / FIN: ${document.getElementById('h-fin').value}`, 105, 95);
-        currentY += lineH;
-
-        // Fila 3: Trabajo Ejecutado
-        const trabajo = `Brecha: ${document.getElementById('m-brecha').value}m | Poda: ${document.getElementById('m-poda').value}m | Postes: ${document.getElementById('m-postes').value}`;
-        drawRow("EJECUTADO:", trabajo, 10, 190);
-        currentY += lineH;
-
-        // Fila 4: Personal y Pagos (LO QUE SOLICITASTE)
-        const pagos = `Personas: ${document.getElementById('poda-personas').value} | M.O: L. ${document.getElementById('pago-mo').value} | Transp: L. ${document.getElementById('pago-trans').value}`;
-        drawRow("PERSONAL/PAGO:", pagos, 10, 190);
-        currentY += lineH;
-
-        // Fila 5: Responsables y GPS
-        drawRow("RESPONSABLES:", `${document.getElementById('resp-super').value} / ${document.getElementById('resp-activ').value}`, 10, 190);
-        currentY += lineH;
-        drawRow("GPS:", `INICIO: ${gpsIni} | FIN: ${gpsFin}`, 10, 190);
-        
-        return currentY + 10; // Retorna la posición para las fotos
+        doc.setFontSize(8);
+        doc.text("Código", 152, 15);
+        doc.text("Versión", 152, 23);
+        doc.text("1", 183, 23); // Valor versión
+        doc.text("Fecha", 152, 31);
+        // Fecha se deja vacía (en blanco) según tu solicitud
     };
 
     const leerFoto = (id) => {
@@ -153,50 +133,68 @@ async function generarPDFPoda() {
         });
     };
 
-    // --- PAGINA 1 ---
-    let nextY = dibujarCajetinSencillo(5);
- 
+    // --- PÁGINA 1: DATOS Y FOTOS PRINCIPALES ---
+    dibujarEstructuraInstitucional();
+    
+    // Cuadro de Información General (Cajetín de datos)
+    doc.setLineWidth(0.2);
+    doc.rect(10, 40, 190, 45);
+    
+    doc.setFontSize(9);
+    let yD = 46;
+    const datos = [
+        `CIRCUITO: ${document.getElementById('poda-circuito').value}`,
+        `ZONA DE TRABAJO: ${document.getElementById('poda-zona').value}`,
+        `HORARIO: INICIO ${document.getElementById('h-ini').value} / FINAL ${document.getElementById('h-fin').value}`,
+        `TRABAJO: Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`,
+        `PAGOS: M.O. L. ${document.getElementById('pago-mo').value} / Transp. L. ${document.getElementById('pago-trans').value} / Personal: ${document.getElementById('poda-personas').value}`,
+        `GPS: Inicio ${gpsIni} | Fin ${gpsFin}`,
+        `RESPONSABLES: ${document.getElementById('resp-super').value} / ${document.getElementById('resp-activ').value}`
+    ];
+
+    datos.forEach(linea => {
+        doc.text(linea, 15, yD);
+        yD += 6;
+    });
+
     const fGrupo = await leerFoto('f-grupo');
     const fVehiculo = await leerFoto('f-vehiculo');
- 
+
     if (fGrupo) {
-        doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA GRUPAL:", 15, nextY);
-        doc.addImage(fGrupo, 'JPEG', 15, nextY + 5, 180, 85);
-        doc.rect(15, nextY + 5, 180, 85);
-        nextY += 95;
+        doc.text("FOTO GRUPO", 15, 93);
+        doc.addImage(fGrupo, 'JPEG', 15, 95, 180, 85);
+        doc.rect(15, 95, 180, 85);
     }
     if (fVehiculo) {
-        doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA VEHÍCULO:", 15, nextY);
-        doc.addImage(fVehiculo, 'JPEG', 15, nextY + 5, 180, 85);
-        doc.rect(15, nextY + 5, 180, 85);
+        doc.text("FOTO VEHÍCULO", 15, 193);
+        doc.addImage(fVehiculo, 'JPEG', 15, 195, 180, 85);
+        doc.rect(15, 195, 180, 85);
     }
- 
-    // Páginas de Identidades y Fotos (Antes/Durante/Después)
-    // ... (Se mantiene igual que el código anterior)
-    
-    // Identidades
-    const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
-    for(let p of idsPersonal){
+
+    // --- PÁGINAS DE IDENTIDADES ---
+    const ids = [{id:'f-id-f', t:'FOTO DNI FRONTAL'}, {id:'f-id-r', t:'FOTO DNI REVÉS'}];
+    for(let p of ids){
         const img = await leerFoto(p.id);
         if(img) {
             doc.addPage();
-            doc.setFont("helvetica", "bold"); doc.text(p.t, 15, 20);
-            doc.addImage(img, 'JPEG', 15, 25, 180, 250); 
-            doc.rect(15, 25, 180, 250);
+            dibujarEstructuraInstitucional();
+            doc.text(p.t, 15, 45);
+            doc.addImage(img, 'JPEG', 15, 50, 180, 230);
+            doc.rect(15, 50, 180, 230);
         }
     }
 
-    // Fotos Proceso
+    // --- PÁGINA DE REGISTRO FOTOGRÁFICO (ANTES/DURANTE/DESPUÉS) ---
     doc.addPage();
-    doc.setFont("helvetica", "bold"); doc.text("REGISTRO FOTOGRÁFICO DE PODA", 15, 20);
+    dibujarEstructuraInstitucional();
     const secciones = [
-        {t:"ANTES", ids:['f-ini-1','f-ini-2','f-ini-3']},
-        {t:"DURANTE", ids:['f-eje-1','f-eje-2','f-eje-3']},
-        {t:"DESPUÉS", ids:['f-fin-1','f-fin-2','f-fin-3']}
+        {t:"FOTOS ANTES", ids:['f-ini-1','f-ini-2','f-ini-3']},
+        {t:"FOTOS DURANTE", ids:['f-eje-1','f-eje-2','f-eje-3']},
+        {t:"FOTOS DESPUÉS", ids:['f-fin-1','f-fin-2','f-fin-3']}
     ];
-    let yImg = 30;
+    let yImg = 45;
     for(let s of secciones){
-        doc.setFontSize(10); doc.text(s.t, 15, yImg);
+        doc.setFont("helvetica", "bold"); doc.text(s.t, 15, yImg);
         yImg += 5; let xImg = 10;
         for(let id of s.ids){
             const img = await leerFoto(id);
