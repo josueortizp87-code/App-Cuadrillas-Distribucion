@@ -1,17 +1,11 @@
-/* ================================
-   VARIABLES DE COLOR - ENEE
-================================ */
 :root {
-    --bg: #0f1a24;          /* Azul oscuro institucional */
-    --card: #16232f;
-    --accent: #f4c430;     /* Amarillo ENEE */
+    --bg: #121212;
+    --card: #1e1e1e;
+    --accent: #f1c40f;
     --text: #ffffff;
-    --border: #2c3e50;
+    --border: #333;
 }
 
-/* ================================
-   BASE
-================================ */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--bg);
@@ -25,9 +19,6 @@ body {
     margin: auto;
 }
 
-/* ================================
-   HEADER Y LOGO
-================================ */
 header {
     text-align: center;
     padding: 10px 0;
@@ -36,44 +27,12 @@ header {
 }
 
 header h1 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--accent);
     text-transform: uppercase;
     margin-top: 10px;
 }
 
-header img {
-    max-width: 180px;
-    height: auto;
-}
-
-/* ================================
-   TARJETAS / CARDS
-================================ */
-.card {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.card:active {
-    transform: scale(0.96);
-}
-
-.card i {
-    font-size: 2.2rem;
-    color: var(--accent);
-    margin-bottom: 10px;
-    display: block;
-}
-
-/* ================================
-   FORMULARIOS
-================================ */
 label {
     display: block;
     margin-top: 15px;
@@ -83,143 +42,81 @@ label {
     text-transform: uppercase;
 }
 
-input,
-select,
-textarea {
+input, select {
     width: 100%;
     padding: 12px;
-    background: #1b2a36;
+    background: #252525;
     border: 1px solid var(--border);
     color: white;
     border-radius: 8px;
     margin-top: 5px;
     box-sizing: border-box;
-    font-size: 1rem; /* legible en campo */
+    font-size: 0.9rem;
 }
 
-input::placeholder {
-    color: #9aa7b1;
+.card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
 }
 
-.input-readonly {
-    background: #000;
-    color: var(--accent);
-    border: none;
-    font-weight: bold;
-}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
 
-/* ================================
-   GRIDS
-================================ */
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-top: 5px;
-}
-
-/* ================================
-   FOTOS / PREVISUALIZACIÓN
-================================ */
 .foto-input-group {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    background: #16232f;
-    padding: 6px;
+    background: #1e1e1e;
+    padding: 5px;
     border-radius: 6px;
-    border: 1px solid var(--border);
+    border: 1px solid #333;
 }
 
-.foto-input-group span {
-    font-size: 10px;
-    color: #c7d1d8;
-    font-weight: bold;
-}
+.foto-input-group span { font-size: 9px; color: var(--accent); text-align: center; }
 
-input[type="file"] {
-    font-size: 10px;
-}
-
-/* Caja donde se muestra la miniatura */
 .preview-box {
     width: 100%;
     height: 60px;
-    background: #0f1a24;
+    background: #121212;
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border: 1px dashed #444;
     overflow: hidden;
-    border: 1px dashed var(--border);
 }
 
-/* Previsualización grande (Grupo y Vehículo) */
-.preview-box.grande {
-    height: 100px;
-}
+input[type="file"] { font-size: 9px; padding: 5px; }
 
-/* ================================
-   BOTONES
-================================ */
 .btn-enviar {
     background: var(--accent);
-    color: #000;
+    color: black;
     width: 100%;
     padding: 15px;
     border: none;
     border-radius: 10px;
     font-weight: bold;
-    margin-top: 25px;
+    margin-top: 20px;
     cursor: pointer;
     font-size: 1rem;
 }
 
 .btn-secundario {
-    background: #1b2a36;
+    background: #333;
     color: var(--accent);
     width: 100%;
     padding: 10px;
     border: 1px solid var(--accent);
     border-radius: 8px;
     margin-top: 10px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
 }
 
-.btn-secundario:active,
-.btn-enviar:active {
-    transform: scale(0.97);
-}
-
-/* ================================
-   GPS / MAPA
-================================ */
 .coords-text {
     font-size: 11px;
-    color: #c7d1d8;
+    color: #aaa;
     margin-top: 8px;
     text-align: center;
-    background: #0b141c;
-    padding: 6px;
+    background: #000;
+    padding: 5px;
     border-radius: 4px;
-}
-
-/* ================================
-   RESPONSIVE BÁSICO
-================================ */
-@media (max-width: 400px) {
-    header h1 {
-        font-size: 1rem;
-    }
-
-    .preview-box.grande {
-        height: 90px;
-    }
 }
