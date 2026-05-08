@@ -1,157 +1,173 @@
-var map, marker, gIni = "--", gFin = "--", sector = "";
+var mapP, markerP;
+var gpsIni = "No marcado", gpsFin = "No marcado";
+var latIni = null, lngIni = null;
+var latFin = null, lngFin = null;
 
-function validarLogin() {
-    const s = document.getElementById('user-sector').value;
-    const p = document.getElementById('pass').value;
-    if (p === "enee2026") {
-        sector = s;
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('form-poda-container').style.display = 'block';
-        document.getElementById('sector-title').innerText = "SECTOR " + s + " - PODA COMUNITARIA";
-        initMap();
-    } else {
-        document.getElementById('login-error').style.display = 'block';
-    }
+window.onload = function() {
+    initMapPoda();
+};
+
+// MAPA PODA
+function initMapPoda() {
+    if (mapP) mapP.remove();
+
+    mapP = L.map('map-poda').setView([14.65, -86.21], 15);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+        .addTo(mapP);
+
+    markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            let lat = pos.coords.latitude;
+            let lng = pos.coords.longitude;
+
+            mapP.setView([lat, lng], 17);
+            markerP.setLatLng([lat, lng]);
+        });
+    }
+
+    setTimeout(() => mapP.invalidateSize(), 300);
 }
 
-function initMap() {
-    map = L.map('map-poda').setView([14.65, -86.21], 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-    marker = L.marker([14.65, -86.21], {draggable: true}).addTo(map);
+// GPS
+function marcarGPS(tipo) {
+    let p = markerP.getLatLng();
+    let lat = Number(p.lat.toFixed(6));
+    let lng = Number(p.lng.toFixed(6));
+    let c = lat + ", " + lng;
+
+    if (tipo === 'ini') {
+        gpsIni = c;
+        latIni = lat;
+        lngIni = lng;
+    } else {
+        gpsFin = c;
+        latFin = lat;
+        lngFin = lng;
+    }
+
+    document.getElementById('coords-display').innerText =
+        `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
-function marcar(t) {
-    let p = marker.getLatLng();
-    let c = p.lat.toFixed(6) + ", " + p.lng.toFixed(6);
-    if(t === 'ini') gIni = c; else gFin = c;
-    document.getElementById('c-txt').innerText = `Inicio: ${gIni} | Fin: ${gFin}`;
+// --- GENERACIÓN DE PDF Y PREVISUALIZACIÓN ---
+
+async function generarPDFPoda() {
+
+    // ✅ ENVÍA EN EL SIGUIENTE CICLO DEL EVENT LOOP
+    setTimeout(() => {
+        enviarDatosCloudflare();
+    }, 0);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const dibujarMarco = () => { doc.setDrawColor(40); doc.setLineWidth(0.5); doc.rect(5, 5, 200, 287); };
+
+    const leerFoto = (id) => {
+        const file = document.getElementById(id).files[0];
+        if (!file) return null;
+        return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    };
+
+    dibujarMarco();
+    doc.setFontSize(14); doc.text("INFORME DE PODA COMUNITARIA SECTOR: JUTICALPA", 15, 20);
+    doc.setFontSize(9);
+    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 15, 28);
+    doc.text(`ZONA: ${document.getElementById('poda-zona').value} | FECHA: ${document.getElementById('poda-fecha').value}`, 15, 33);
+    doc.text(`TRABAJO EJECUTADO: Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`, 15, 38);
+    doc.text(`PAGOS: MO L. ${document.getElementById('pago-mo').value}, Trans L. ${document.getElementById('pago-trans').value}, Personas ${document.getElementById('poda-personas').value}`, 15, 43);
+    doc.text(`RESPONSABLES: Super. ${document.getElementById('resp-super').value}, Contr. ${document.getElementById('resp-activ').value}`, 15, 48);
+    doc.text(`GPS: Inicio ${gpsIni} / Fin ${gpsFin}`, 15, 53);
+
+    const fGrupo = await leerFoto('f-grupo');
+    if(fGrupo) { doc.text("EVIDENCIA GRUPAL:", 15, 63); doc.addImage(fGrupo, 'JPEG', 10, 68, 190, 120); doc.rect(10, 68, 190, 120); }
+
+    const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
+    for(let p of idsPersonal){
+        const img = await leerFoto(p.id);
+        if(img) {
+            doc.addPage(); dibujarMarco();
+            doc.text(p.t, 15, 15); doc.addImage(img, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
+        }
+    }
+
+    doc.addPage(); dibujarMarco();
+    const secciones = [{t:"FOTOS ANTES", ids:['f-ini-1','f-ini-2','f-ini-3']},{t:"FOTOS DURANTE", ids:['f-eje-1','f-eje-2','f-eje-3']},{t:"FOTOS DESPUÉS", ids:['f-fin-1','f-fin-2','f-fin-3']}];
+    let y = 15;
+    for(let s of secciones){
+        doc.text(s.t, 15, y); y+=5; let x = 10;
+        for(let id of s.ids){
+            const img = await leerFoto(id);
+            if(img){ doc.addImage(img, 'JPEG', x, y, 62, 78); doc.rect(x, y, 62, 78); }
+            x+=64;
+        }
+        y+=85;
+    }
+
+    const rec = await leerFoto('f-recibo');
+    if(rec){
+        doc.addPage(); dibujarMarco();
+        doc.text("RECIBO DE CAJA", 15, 15); doc.addImage(rec, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
+    }
+
+    doc.save("Informe_Poda_Final.pdf");
+
 }
 
-function drawHeader(doc, s) {
-    doc.setDrawColor(0); doc.setLineWidth(0.5);
-    doc.rect(10, 10, 190, 277); 
-    doc.line(10, 30, 200, 30);  
-    doc.line(65, 10, 65, 30);   
-    doc.line(140, 10, 140, 30); 
-    doc.line(140, 17, 200, 17); 
-    doc.line(140, 24, 200, 24); 
-    doc.line(165, 10, 165, 30); 
-
-    // SOLUCIÓN AL ERROR: Texto en lugar de imagen para evitar bloqueos CORS
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("ENEE", 37, 18, {align:"center"});
-    doc.setFontSize(8);
-    doc.text("UTCD", 37, 24, {align:"center"});
-    
-    doc.setFontSize(9);
-    doc.text("INFORME DE PODA COMUNITARIA", 102, 18, {align:"center"});
-    doc.text("SECTOR " + s, 102, 23, {align:"center"});
-
-    doc.setFontSize(7);
-    doc.text("Código", 142, 15);
-    doc.text("Versión", 142, 22); doc.text("1", 182, 22);
-    doc.text("Fecha", 142, 28); 
+// PREVISUALIZACIÓN
+function previsualizar(input, idContenedor) {
+    const contenedor = document.getElementById(idContenedor);
+    contenedor.innerHTML = "";
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = "100%"; img.style.height = "100%";
+            img.style.objectFit = "cover"; img.style.borderRadius = "4px";
+            contenedor.appendChild(img);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
 }
+// --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
+function enviarDatosCloudflare() {
+    const data = {
+        circuito: document.getElementById('poda-circuito').value,
+        zona_trabajo: document.getElementById('poda-zona').value,
+        fecha: document.getElementById('poda-fecha').value,
+        hora_inicio: document.getElementById('h-ini').value,
+        hora_final: document.getElementById('h-fin').value,
 
-async function crearPDF() {
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        const getB64 = (id) => {
-            const f = document.getElementById(id).files[0];
-            if(!f) return null;
-            return new Promise(res => { 
-                const r = new FileReader(); 
-                r.onload = (e) => res(e.target.result); 
-                r.readAsDataURL(f); 
-            });
-        };
+        gps_inicio: gpsIni,
+        gps_final: gpsFin,
+        lat_inicio: latIni,
+        lng_inicio: lngIni,
+        lat_final: latFin,
+        lng_final: lngFin,
 
-        drawHeader(doc, sector);
-        
-        doc.setFontSize(9);
-        doc.rect(15, 35, 180, 45); 
-        
-        let info = [
-            ["CIRCUITO:", document.getElementById('poda-circuito').value, "SUPERVISOR:", document.getElementById('resp-super').value],
-            ["ZONA:", document.getElementById('poda-zona').value, "LÍDER:", document.getElementById('resp-activ').value],
-            ["FECHA:", document.getElementById('poda-fecha').value, "PERSONAS:", document.getElementById('poda-personas').value],
-            ["HORARIO:", `${document.getElementById('h-ini').value} - ${document.getElementById('h-fin').value}`, "GPS INI:", gIni],
-            ["TRABAJO:", `${document.getElementById('m-brecha').value}m Brecha / ${document.getElementById('m-poda').value}m Poda`, "GPS FIN:", gFin]
-        ];
+        m_brecha: document.getElementById('m-brecha').value,
+        m_poda: document.getElementById('m-poda').value,
+        m_postes: document.getElementById('m-postes').value,
 
-        let yI = 42;
-        info.forEach(row => {
-            doc.setFont("helvetica", "bold"); doc.text(row[0], 18, yI);
-            doc.setFont("helvetica", "normal"); doc.text(String(row[1] || ""), 40, yI);
-            doc.setFont("helvetica", "bold"); doc.text(row[2], 100, yI);
-            doc.setFont("helvetica", "normal"); doc.text(String(row[3] || ""), 125, yI);
-            yI += 7;
-        });
+        personas: document.getElementById('poda-personas').value,
+        pago_mo: document.getElementById('pago-mo').value,
+        pago_trans: document.getElementById('pago-trans').value,
 
-        const fG = await getB64('f-grupo'), fV = await getB64('f-vehiculo');
-        if(fG) { doc.setFont("helvetica", "bold"); doc.text("FOTO GRUPO", 105, 88, {align:"center"}); doc.addImage(fG, 'JPEG', 30, 92, 150, 85); doc.rect(30, 92, 150, 85); }
-        if(fV) { doc.setFont("helvetica", "bold"); doc.text("FOTO VEHÍCULO", 105, 188, {align:"center"}); doc.addImage(fV, 'JPEG', 30, 192, 150, 85); doc.rect(30, 192, 150, 85); }
+        responsable_super: document.getElementById('resp-super').value,
+        responsable_contratista: document.getElementById('resp-activ').value,
 
-        const fLF = await getB64('f-lider-f'), fLR = await getB64('f-lider-r');
-        if(fLF || fLR) {
-            doc.addPage(); drawHeader(doc, sector);
-            doc.setFontSize(12); doc.text("DNI LIDER DE CUADRILLA", 105, 45, {align:"center"});
-            if(fLF) { doc.addImage(fLF, 'JPEG', 55, 60, 100, 75); doc.rect(55, 60, 100, 75); }
-            if(fLR) { doc.addImage(fLR, 'JPEG', 55, 150, 100, 75); doc.rect(55, 150, 100, 75); }
-        }
+        fecha_envio: new Date().toISOString()
+    };
 
-        const dnis = [{id:'f-id-f', t:'DNI FRENTE BENEFICIARIO'}, {id:'f-id-r', t:'DNI REVÉS BENEFICIARIO'}];
-        for(let d of dnis) {
-            const img = await getB64(d.id);
-            if(img) {
-                doc.addPage(); drawHeader(doc, sector);
-                doc.setFontSize(12); doc.text(d.t, 105, 45, {align:"center"});
-                doc.addImage(img, 'JPEG', 15, 60, 180, 200); 
-                doc.rect(15, 60, 180, 200);
-            }
-        }
-
-        doc.addPage(); drawHeader(doc, sector);
-        let cats = [
-            {t:"ANTES", ids:['f-a1','f-a2','f-a3']},
-            {t:"DURANTE", ids:['f-d1','f-d2','f-d3']},
-            {t:"DESPUÉS", ids:['f-f1','f-f2','f-f3']}
-        ];
-        let yE = 45;
-        for(let c of cats) {
-            doc.setFont("helvetica", "bold"); doc.text(c.t, 15, yE);
-            let xE = 15;
-            for(let id of c.ids) {
-                let img = await getB64(id);
-                if(img) { doc.addImage(img, 'JPEG', xE, yE+5, 58, 65); doc.rect(xE, yE+5, 58, 65); }
-                xE += 62;
-            }
-            yE += 80;
-        }
-
-        doc.save(`Informe_${sector}.pdf`);
-    } catch (err) {
-        alert("Error al generar: " + err.message);
-    }
-}
-
-function previsualizar(input, id) {
-    const b = document.getElementById(id);
-    if (!b) return; 
-    b.innerHTML = "";
-    if(input.files[0]) {
-        const r = new FileReader();
-        r.onload = (e) => { 
-            const i = document.createElement('img'); 
-            i.src = e.target.result; 
-            i.style.width="100%"; 
-            i.style.height="100%"; 
-            i.style.objectFit="cover"; 
-            b.appendChild(i); 
-        };
-        r.readAsDataURL(input.files[0]);
-    }
+    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    }).catch(() => {}); 
 }
