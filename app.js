@@ -3,7 +3,7 @@ var gpsIni = "No marcado", gpsFin = "No marcado";
 var latIni = null, lngIni = null;
 var latFin = null, lngFin = null;
 var sectorActivo = "";
- 
+
 // CREDENCIALES
 const USUARIOS = {
     "admin": "admin123",
@@ -21,11 +21,11 @@ const USUARIOS = {
     "tegucigalpa": "enee2026",
     "tocoa": "enee2026"
 };
- 
+
 function validarLogin() {
     const u = document.getElementById('user').value.toLowerCase();
     const p = document.getElementById('pass').value;
- 
+
     if (USUARIOS[u] && USUARIOS[u] === p) {
         sectorActivo = u.toUpperCase();
         document.getElementById('login-container').style.display = 'none';
@@ -36,7 +36,7 @@ function validarLogin() {
         document.getElementById('login-error').style.display = 'block';
     }
 }
- 
+
 function initMapPoda() {
     if (mapP) mapP.remove();
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
@@ -53,22 +53,12 @@ function initMapPoda() {
     }
     setTimeout(() => mapP.invalidateSize(), 300);
 }
- 
+
 function actualizarMarcador(lat, lng) {
     mapP.setView([lat, lng], 17);
     markerP.setLatLng([lat, lng]);
 }
- 
-function ingresarManual() {
-    const lat = parseFloat(document.getElementById('manual-lat').value);
-    const lng = parseFloat(document.getElementById('manual-lng').value);
-    if (!isNaN(lat) && !isNaN(lng)) {
-        actualizarMarcador(lat, lng);
-    } else {
-        alert("Ingrese coordenadas válidas");
-    }
-}
- 
+
 function marcarGPS(tipo) {
     let p = markerP.getLatLng();
     let lat = Number(p.lat.toFixed(6));
@@ -78,48 +68,59 @@ function marcarGPS(tipo) {
     else { gpsFin = c; latFin = lat; lngFin = lng; }
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
- 
+
 async function generarPDFPoda() {
     try { enviarDatosCloudflare(); } catch(e) {}
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+    const logoUrl = "https://raw.githubusercontent.com/josueortizp87-code/App-Cuadrillas-Distribucion/refs/heads/main/imagenes/UTCD%20Vertical.png";
+
+    // Función para obtener la imagen y convertirla a base64
+    const getLogoBase64 = (url) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.src = url;
+        });
+    };
+
+    const logoImg = await getLogoBase64(logoUrl);
+
     const dibujarEstructuraInstitucional = () => {
-        // 1. MARCO PERIMETRAL
+        // Marco de la hoja
         doc.setDrawColor(0);
         doc.setLineWidth(0.5);
         doc.rect(5, 5, 200, 287); 
 
-        // 2. CAJETÍN DEL ENCABEZADO
+        // Cajetín encabezado
         doc.setLineWidth(0.3);
         doc.rect(10, 10, 190, 25); 
         
-        // Líneas verticales
         doc.line(60, 10, 60, 35);  
         doc.line(150, 10, 150, 35); 
         doc.line(170, 10, 170, 35);
-
-        // Líneas horizontales de la derecha (Código, Versión, Fecha)
         doc.line(150, 18, 200, 18);
         doc.line(150, 26, 200, 26);
 
-        // 3. TEXTOS CENTRADOS DEL ENCABEZADO
-        doc.setFont("helvetica", "bold");
-        
-        // Bloque Izquierdo (Centrado horizontalmente en su espacio)
-        doc.setFontSize(9);
-        doc.text("UTCD", 35, 16, {align: "center"});
-        doc.setFontSize(7);
-        doc.text("UNIDAD TÉCNICA DE CONTROL", 35, 22, {align: "center"});
-        doc.text("DE DISTRIBUCIÓN", 35, 27, {align: "center"});
+        // Logo insertado en la celda izquierda
+        if (logoImg) {
+            doc.addImage(logoImg, 'PNG', 12, 12, 45, 20);
+        }
 
-        // Bloque Central (Centrado horizontalmente en su espacio)
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
         doc.text("INFORME DE PODA COMUNITARIA", 105, 19, {align: "center"});
         doc.text("SECTOR: " + sectorActivo, 105, 27, {align: "center"});
 
-        // Bloque Derecho (Etiquetas y valores)
         doc.setFontSize(8);
         doc.text("Código", 152, 15);
         doc.text("Versión", 152, 23);
@@ -139,12 +140,11 @@ async function generarPDFPoda() {
         });
     };
 
-    // --- PÁGINA 1 ---
+    // PÁGINA 1
     dibujarEstructuraInstitucional();
     
     doc.setLineWidth(0.2);
     doc.rect(10, 40, 190, 45);
-    
     doc.setFontSize(9);
     let yD = 47;
 
@@ -152,14 +152,14 @@ async function generarPDFPoda() {
         doc.setFont("helvetica", "bold");
         doc.text(label, 15, y);
         doc.setFont("helvetica", "normal");
-        doc.text(String(value), 50, y); // Ajuste de tabulación para el contenido
+        doc.text(String(value), 52, y);
     };
 
     escribirLinea("CIRCUITO:", document.getElementById('poda-circuito').value, yD); yD += 6;
     escribirLinea("ZONA DE TRABAJO:", document.getElementById('poda-zona').value, yD); yD += 6;
     escribirLinea("HORARIO:", `INICIO ${document.getElementById('h-ini').value} / FINAL ${document.getElementById('h-fin').value}`, yD); yD += 6;
     escribirLinea("TRABAJO:", `Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`, yD); yD += 6;
-    escribirLinea("PAGOS:", `M.O. L. ${document.getElementById('pago-mo').value} / Transp. L. ${document.getElementById('pago-trans').value} / Personal: ${document.getElementById('poda-personas').value}`, yD); yD += 6;
+    escribirLinea("PAGOS:", `M.O. L. ${document.getElementById('pago-mo').value} / Trans. L. ${document.getElementById('pago-trans').value} / Personal: ${document.getElementById('poda-personas').value}`, yD); yD += 6;
     escribirLinea("GPS:", `Inicio ${gpsIni} | Fin ${gpsFin}`, yD); yD += 6;
     escribirLinea("RESPONSABLES:", `${document.getElementById('resp-super').value} / ${document.getElementById('resp-activ').value}`, yD);
 
@@ -210,7 +210,7 @@ async function generarPDFPoda() {
 
     doc.save(`Informe_Poda_${sectorActivo}.pdf`);
 }
- 
+
 function previsualizar(input, idContenedor) {
     const contenedor = document.getElementById(idContenedor);
     contenedor.innerHTML = "";
@@ -226,7 +226,7 @@ function previsualizar(input, idContenedor) {
         reader.readAsDataURL(input.files[0]);
     }
 }
- 
+
 function enviarDatosCloudflare() {
     const data = {
         sector: sectorActivo,
