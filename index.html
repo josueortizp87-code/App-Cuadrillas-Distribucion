@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENEE - Poda Comunitaria</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -43,7 +42,7 @@
 
 <div id="form-poda-container" class="container" style="display: none;">
     <header>
-        <img src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px;">
+        <img id="logo-main" src="https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg" alt="ENEE" style="height: 60px; background-color: white; padding: 10px; border-radius: 8px;">
         <h1 id="sector-title">PODA COMUNITARIA</h1>
     </header>
 
@@ -86,7 +85,7 @@
             </div>
         </div>
 
-        <label>LÍDER DE CUADRILLA:</label>
+        <label>LÍDER DE CUADRILLA (DNI):</label>
         <div class="grid-2">
             <div class="foto-input-group">
                 <span>DNI FRONTAL</span><input type="file" id="f-lider-f" onchange="previsualizar(this, 'p-f-lider-f')">
@@ -112,29 +111,23 @@
 
         <label>EVIDENCIA DE CAMPO (9 FOTOS):</label>
         <div class="grid-3">
-            <div class="foto-input-group"><span>ANTES 1</span><input type="file" id="f-a1" onchange="previsualizar(this, 'p-a1')"><div id="p-a1" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>ANTES 2</span><input type="file" id="f-a2" onchange="previsualizar(this, 'p-a2')"><div id="p-a2" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>ANTES 3</span><input type="file" id="f-a3" onchange="previsualizar(this, 'p-a3')"><div id="p-a3" class="preview-box"></div></div>
+            <input type="file" id="f-a1" onchange="previsualizar(this, 'p-a1')">
+            <input type="file" id="f-a2" onchange="previsualizar(this, 'p-a2')">
+            <input type="file" id="f-a3" onchange="previsualizar(this, 'p-a3')">
         </div>
         <div class="grid-3">
-            <div class="foto-input-group"><span>DURANTE 1</span><input type="file" id="f-d1" onchange="previsualizar(this, 'p-d1')"><div id="p-d1" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>DURANTE 2</span><input type="file" id="f-d2" onchange="previsualizar(this, 'p-d2')"><div id="p-d2" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>DURANTE 3</span><input type="file" id="f-d3" onchange="previsualizar(this, 'p-d3')"><div id="p-d3" class="preview-box"></div></div>
+            <input type="file" id="f-d1" onchange="previsualizar(this, 'p-d1')">
+            <input type="file" id="f-d2" onchange="previsualizar(this, 'p-d2')">
+            <input type="file" id="f-d3" onchange="previsualizar(this, 'p-d3')">
         </div>
         <div class="grid-3">
-            <div class="foto-input-group"><span>DESPUÉS 1</span><input type="file" id="f-f1" onchange="previsualizar(this, 'p-f1')"><div id="p-f1" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>DESPUÉS 2</span><input type="file" id="f-f2" onchange="previsualizar(this, 'p-f2')"><div id="p-f2" class="preview-box"></div></div>
-            <div class="foto-input-group"><span>DESPUÉS 3</span><input type="file" id="f-f3" onchange="previsualizar(this, 'p-f3')"><div id="p-f3" class="preview-box"></div></div>
+            <input type="file" id="f-f1" onchange="previsualizar(this, 'p-f1')">
+            <input type="file" id="f-f2" onchange="previsualizar(this, 'p-f2')">
+            <input type="file" id="f-f3" onchange="previsualizar(this, 'p-f3')">
         </div>
 
-        <label>MAPA GPS:</label>
-        <div id="map-poda" style="height: 200px; border-radius: 8px; margin-bottom: 10px;"></div>
-        <div class="grid-2">
-            <input type="text" id="lat-m" placeholder="Latitud">
-            <input type="text" id="lng-m" placeholder="Longitud">
-        </div>
-        <button type="button" class="btn-secundario" onclick="setManual()">FIJAR GPS MANUAL</button>
-
+        <div id="map-poda" style="height: 200px; border-radius: 8px; margin: 15px 0;"></div>
+        
         <div class="grid-2">
             <button type="button" class="btn-secundario" onclick="marcar('ini')">COORD. INICIAL</button>
             <button type="button" class="btn-secundario" onclick="marcar('fin')">COORD. FINAL</button>
