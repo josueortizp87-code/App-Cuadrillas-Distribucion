@@ -1,65 +1,82 @@
 var mapP, markerP;
 var gpsIni = "No marcado", gpsFin = "No marcado";
-var currentSector = "";
+var latIni = null, lngIni = null;
+var latFin = null, lngFin = null;
 
-const SECTORES_PASS = "enee2024"; // Contraseña única para todos los sectores por ahora
+// CREDENCIALES
+const USUARIOS = {
+    "admin": "admin123",
+    "supervisor": "super123"
+};
 
 function validarLogin() {
-    const sector = document.getElementById('user-sector').value;
-    const pass = document.getElementById('pass').value;
+    const u = document.getElementById('user').value;
+    const p = document.getElementById('pass').value;
 
-    if (pass === SECTORES_PASS || (sector === "ADMIN" && pass === "admin123")) {
-        currentSector = sector;
+    if (USUARIOS[u] && USUARIOS[u] === p) {
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('form-poda-container').style.display = 'block';
-        document.getElementById('header-sector-title').innerText = `SECTOR ${sector} - PODA COMUNITARIA`;
-        document.getElementById('user-display').innerText = "SESIÓN: " + sector;
+        document.getElementById('user-display').innerText = "Usuario: " + u.toUpperCase();
         initMapPoda();
     } else {
         document.getElementById('login-error').style.display = 'block';
     }
 }
 
-// Configuración del Mapa (Esri Satelital)
+// MAPA PODA (ESRI SATÉLITE)
 function initMapPoda() {
     if (mapP) mapP.remove();
+
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(mapP);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community'
+    }).addTo(mapP);
+
     markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            let lat = pos.coords.latitude;
+            let lng = pos.coords.longitude;
+            actualizarMarcador(lat, lng);
+        });
+    }
+    setTimeout(() => mapP.invalidateSize(), 300);
 }
 
-// Función para dibujar el encabezado técnico en cada página
-function dibujarEncabezadoTecnico(doc, sector) {
-    // Marco exterior
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.5);
-    doc.rect(10, 10, 190, 277); // Marco principal de la hoja
+function actualizarMarcador(lat, lng) {
+    mapP.setView([lat, lng], 17);
+    markerP.setLatLng([lat, lng]);
+}
 
-    // Estructura del encabezado (Imagen 1)
-    doc.line(10, 30, 200, 30); // Línea inferior del encabezado
-    doc.line(65, 10, 65, 30);  // Divisor logo
-    doc.line(140, 10, 140, 30); // Divisor título/datos
-    doc.line(140, 17, 200, 17); // Divisor código/versión
-    doc.line(140, 24, 200, 24); // Divisor versión/fecha
-    doc.line(165, 10, 165, 30); // Divisor etiquetas/valores
+function ingresarManual() {
+    const lat = parseFloat(document.getElementById('manual-lat').value);
+    const lng = parseFloat(document.getElementById('manual-lng').value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+        actualizarMarcador(lat, lng);
+    } else {
+        alert("Ingrese coordenadas válidas");
+    }
+}
 
-    // Logo (Simulado con texto si no hay base64, pero usaremos el espacio)
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.text("UTCD", 30, 20, {align: "center"});
-    doc.setFontSize(5);
-    doc.text("UNIDAD TÉCNICA DE CONTROL\nDE DISTRIBUCIÓN", 30, 24, {align: "center"});
+function marcarGPS(tipo) {
+    let p = markerP.getLatLng();
+    let lat = Number(p.lat.toFixed(6));
+    let lng = Number(p.lng.toFixed(6));
+    let c = lat + ", " + lng;
 
-    // Título Central
-    doc.setFontSize(9);
-    doc.text("INFORME DE PODA COMUNITARIA", 102, 18, {align: "center"});
-    doc.text(`SECTOR ${sector}`, 102, 23, {align: "center"});
+    if (tipo === 'ini') {
+        gpsIni = c;
+        latIni = lat;
+        lngIni = lng;
+    } else {
+        gpsFin = c;
+        latFin = lat;
+        lngFin = lng;
+    }
 
-    // Datos Derecha
-    doc.setFontSize(7);
-    doc.text("Código", 142, 15);
-    doc.text("Versión", 142, 22); doc.text("1", 182, 22);
-    doc.text("Fecha", 142, 28);
+    document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
 async function generarPDFPoda() {
@@ -147,37 +164,37 @@ function previsualizar(input, idContenedor) {
 }
 // --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
 function enviarDatosCloudflare() {
-    const data = {
-        circuito: document.getElementById('poda-circuito').value,
-        zona_trabajo: document.getElementById('poda-zona').value,
-        fecha: document.getElementById('poda-fecha').value,
-        hora_inicio: document.getElementById('h-ini').value,
-        hora_final: document.getElementById('h-fin').value,
+    const data = {
+        circuito: document.getElementById('poda-circuito').value,
+        zona_trabajo: document.getElementById('poda-zona').value,
+        fecha: document.getElementById('poda-fecha').value,
+        hora_inicio: document.getElementById('h-ini').value,
+        hora_final: document.getElementById('h-fin').value,
 
-        gps_inicio: gpsIni,
-        gps_final: gpsFin,
-        lat_inicio: latIni,
-        lng_inicio: lngIni,
-        lat_final: latFin,
-        lng_final: lngFin,
+        gps_inicio: gpsIni,
+        gps_final: gpsFin,
+        lat_inicio: latIni,
+        lng_inicio: lngIni,
+        lat_final: latFin,
+        lng_final: lngFin,
 
-        m_brecha: document.getElementById('m-brecha').value,
-        m_poda: document.getElementById('m-poda').value,
-        m_postes: document.getElementById('m-postes').value,
+        m_brecha: document.getElementById('m-brecha').value,
+        m_poda: document.getElementById('m-poda').value,
+        m_postes: document.getElementById('m-postes').value,
 
-        personas: document.getElementById('poda-personas').value,
-        pago_mo: document.getElementById('pago-mo').value,
-        pago_trans: document.getElementById('pago-trans').value,
+        personas: document.getElementById('poda-personas').value,
+        pago_mo: document.getElementById('pago-mo').value,
+        pago_trans: document.getElementById('pago-trans').value,
 
-        responsable_super: document.getElementById('resp-super').value,
-        responsable_contratista: document.getElementById('resp-activ').value,
+        responsable_super: document.getElementById('resp-super').value,
+        responsable_contratista: document.getElementById('resp-activ').value,
 
-        fecha_envio: new Date().toISOString()
-    };
+        fecha_envio: new Date().toISOString()
+    };
 
-    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    }).catch(() => {}); 
+    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    }).catch(() => {}); 
 }
