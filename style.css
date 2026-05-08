@@ -1,13 +1,17 @@
-/* Variables de color de la ENEE */
-
+/* ================================
+   VARIABLES DE COLOR - ENEE
+================================ */
 :root {
-    --bg: #121212;
-    --card: #1e1e1e;
-    --accent: #f1c40f;
+    --bg: #0f1a24;          /* Azul oscuro institucional */
+    --card: #16232f;
+    --accent: #f4c430;     /* Amarillo ENEE */
     --text: #ffffff;
-    --border: #333;
+    --border: #2c3e50;
 }
 
+/* ================================
+   BASE
+================================ */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--bg);
@@ -21,6 +25,9 @@ body {
     margin: auto;
 }
 
+/* ================================
+   HEADER Y LOGO
+================================ */
 header {
     text-align: center;
     padding: 10px 0;
@@ -35,16 +42,17 @@ header h1 {
     margin-top: 10px;
 }
 
-/* Tarjetas del Menú Principal */
-.grid-menu {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+header img {
+    max-width: 180px;
+    height: auto;
 }
 
+/* ================================
+   TARJETAS / CARDS
+================================ */
 .card {
     background: var(--card);
-    padding: 25px 10px;
+    padding: 20px;
     border-radius: 12px;
     text-align: center;
     border: 1px solid var(--border);
@@ -52,7 +60,10 @@ header h1 {
     transition: 0.3s;
 }
 
-.card:active { transform: scale(0.95); }
+.card:active {
+    transform: scale(0.96);
+}
+
 .card i {
     font-size: 2.2rem;
     color: var(--accent);
@@ -60,7 +71,9 @@ header h1 {
     display: block;
 }
 
-/* Formularios y Etiquetas */
+/* ================================
+   FORMULARIOS
+================================ */
 label {
     display: block;
     margin-top: 15px;
@@ -70,282 +83,143 @@ label {
     text-transform: uppercase;
 }
 
-
-
-input, select, textarea {
-
+input,
+select,
+textarea {
     width: 100%;
-
     padding: 12px;
-
-    background: #252525;
-
+    background: #1b2a36;
     border: 1px solid var(--border);
-
     color: white;
-
     border-radius: 8px;
-
     margin-top: 5px;
-
     box-sizing: border-box;
-
-    font-size: 0.9rem;
-
+    font-size: 1rem; /* legible en campo */
 }
 
-
+input::placeholder {
+    color: #9aa7b1;
+}
 
 .input-readonly {
-
     background: #000;
-
     color: var(--accent);
-
     border: none;
-
     font-weight: bold;
-
 }
 
-
-
-/* Botones de Prioridad (ALTA, MEDIA, BAJA) */
-
-.selector-botones {
-
-    display: flex;
-
+/* ================================
+   GRIDS
+================================ */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
-
-    margin-top: 8px;
-
 }
 
-
-
-.btn-prioridad {
-
-    flex: 1; /* Esto hace que los 3 botones midan lo mismo */
-
-    padding: 12px;
-
-    background: #333;
-
-    color: white;
-
-    border: 1px solid #444;
-
-    border-radius: 8px;
-
-    cursor: pointer;
-
-    font-weight: bold;
-
-    font-size: 0.8rem;
-
-    transition: 0.2s;
-
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 5px;
 }
 
-
-
-/* Cuadrículas (Grids) */
-
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
-
-
-
-/* Estilo para los inputs de archivos (fotos) */
-
-.grid-3 input[type="file"] {
-
-    font-size: 9px;
-
-    background: #1e1e1e;
-
-    padding: 8px 5px;
-
-}
-
-
-
-.foto-box {
-
-    background: #1e1e1e;
-
-    border: 1px dashed #555;
-
-    padding: 5px;
-
-    border-radius: 6px;
-
-    text-align: center;
-
-}
-
-
-
-.foto-box span {
-
-    font-size: 10px;
-
-    display: block;
-
-    margin-bottom: 4px;
-
-    color: #888;
-
-}
-
-
-
-/* Botones de Acción */
-
-.btn-regresar {
-
-    background: none;
-
-    border: none;
-
-    color: var(--accent);
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-    margin-bottom: 10px;
-
-    font-size: 0.9rem;
-
-}
-
-
-
-.btn-enviar {
-
-    background: var(--accent);
-
-    color: black;
-
-    width: 100%;
-
-    padding: 15px;
-
-    border: none;
-
-    border-radius: 10px;
-
-    font-weight: bold;
-
-    margin-top: 25px;
-
-    cursor: pointer;
-
-    font-size: 1rem;
-
-}
-
-
-
-.btn-secundario {
-
-    background: #333;
-
-    color: var(--accent);
-
-    width: 100%;
-
-    padding: 10px;
-
-    border: 1px solid var(--accent);
-
-    border-radius: 8px;
-
-    margin-top: 10px;
-
-    font-size: 0.75rem;
-
-    cursor: pointer;
-
-}
-
-
-
-/* Mapa y GPS */
-
-.coords-text {
-
-    font-size: 11px;
-
-    color: #aaa;
-
-    margin-top: 8px;
-
-    text-align: center;
-
-    background: #000;
-
-    padding: 5px;
-
-    border-radius: 4px;
-
-}
-
-/* Contenedor de la foto y su miniatura */
-
+/* ================================
+   FOTOS / PREVISUALIZACIÓN
+================================ */
 .foto-input-group {
-
     display: flex;
-
     flex-direction: column;
-
     gap: 5px;
-
-    background: #1e1e1e;
-
-    padding: 5px;
-
+    background: #16232f;
+    padding: 6px;
     border-radius: 6px;
-
-    border: 1px solid #333;
-
+    border: 1px solid var(--border);
 }
 
-
-
-/* El recuadro donde aparecerá la imagen */
-
-.preview-box {
-
-    width: 100%;
-
-    height: 60px; /* Altura de la miniatura */
-
-    background: #121212;
-
-    border-radius: 4px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    overflow: hidden;
-
-    border: 1px dashed #444;
-
+.foto-input-group span {
+    font-size: 10px;
+    color: #c7d1d8;
+    font-weight: bold;
 }
-
-
-
-/* Ajuste para que el texto del input no estorbe */
 
 input[type="file"] {
-
     font-size: 10px;
+}
 
+/* Caja donde se muestra la miniatura */
+.preview-box {
+    width: 100%;
+    height: 60px;
+    background: #0f1a24;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px dashed var(--border);
+}
+
+/* Previsualización grande (Grupo y Vehículo) */
+.preview-box.grande {
+    height: 100px;
+}
+
+/* ================================
+   BOTONES
+================================ */
+.btn-enviar {
+    background: var(--accent);
+    color: #000;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    margin-top: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-secundario {
+    background: #1b2a36;
+    color: var(--accent);
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-secundario:active,
+.btn-enviar:active {
+    transform: scale(0.97);
+}
+
+/* ================================
+   GPS / MAPA
+================================ */
+.coords-text {
+    font-size: 11px;
+    color: #c7d1d8;
+    margin-top: 8px;
+    text-align: center;
+    background: #0b141c;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+/* ================================
+   RESPONSIVE BÁSICO
+================================ */
+@media (max-width: 400px) {
+    header h1 {
+        font-size: 1rem;
+    }
+
+    .preview-box.grande {
+        height: 90px;
+    }
 }
