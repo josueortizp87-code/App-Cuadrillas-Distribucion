@@ -187,17 +187,53 @@ async function generarPDFPoda() {
         doc.rect(15, 195, 180, 85);
     }
 
-    const ids = [{id:'f-id-f', t:'FOTO DNI FRONTAL'}, {id:'f-id-r', t:'FOTO DNI REVÉS'}];
-    for(let p of ids){
-        const img = await leerFoto(p.id);
-        if(img) {
-            doc.addPage();
-            dibujarEstructuraInstitucional();
-            doc.setFont("helvetica", "bold"); doc.text(p.t, 15, 45);
-            doc.addImage(img, 'JPEG', 15, 50, 180, 230);
-            doc.rect(15, 50, 180, 230);
-        }
+    // --- PÁGINA 2: DNI LÍDER (Centrado y tamaño ID) ---
+const fLiderF = await leerFoto('f-lider-f');
+const fLiderR = await leerFoto('f-lider-r');
+
+if (fLiderF || fLiderR) {
+    doc.addPage();
+    dibujarEstructuraInstitucional();
+    
+    const cardW = 85; // Ancho estándar ID mm
+    const cardH = 54; // Alto estándar ID mm
+    const centerX = (210 - cardW) / 2;
+
+    if (fLiderF) {
+        doc.setFont("helvetica", "bold");
+        doc.text("DNI LÍDER - FRONTAL", 105, 55, {align: "center"});
+        doc.addImage(fLiderF, 'JPEG', centerX, 60, cardW, cardH);
+        doc.rect(centerX, 60, cardW, cardH);
     }
+
+    if (fLiderR) {
+        doc.setFont("helvetica", "bold");
+        doc.text("DNI LÍDER - REVÉS", 105, 135, {align: "center"});
+        doc.addImage(fLiderR, 'JPEG', centerX, 140, cardW, cardH);
+        doc.rect(centerX, 140, cardW, cardH);
+    }
+}
+
+// --- ACTUALIZACIÓN DE IDENTIDADES GRUPALES ---
+// Reemplaza tu bucle anterior de 'ids' por este que incluye las 4 fotos:
+const identidades = [
+    {id:'f-id-f', t:'DNI PERSONAL FRENTE (1)'}, 
+    {id:'f-id-r', t:'DNI PERSONAL REVÉS (1)'},
+    {id:'f-id-f2', t:'DNI PERSONAL FRENTE (2)'}, 
+    {id:'f-id-r2', t:'DNI PERSONAL REVÉS (2)'}
+];
+
+for(let p of identidades){
+    const img = await leerFoto(p.id);
+    if(img) {
+        doc.addPage();
+        dibujarEstructuraInstitucional();
+        doc.setFont("helvetica", "bold");
+        doc.text(p.t, 105, 45, {align: "center"});
+        doc.addImage(img, 'JPEG', 15, 50, 180, 230); // Estas siguen ocupando la hoja
+        doc.rect(15, 50, 180, 230);
+    }
+}
 
     doc.addPage();
     dibujarEstructuraInstitucional();
