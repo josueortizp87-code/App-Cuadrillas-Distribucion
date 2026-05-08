@@ -2,9 +2,9 @@ var mapP, markerP;
 var gpsIni = "No marcado", gpsFin = "No marcado";
 var latIni = null, lngIni = null;
 var latFin = null, lngFin = null;
-var sectorActivo = ""; // Variable para saber qué sector está logueado
+var sectorActivo = "";
  
-// CREDENCIALES ACTUALIZADAS
+// CREDENCIALES
 const USUARIOS = {
     "admin": "admin123",
     "brus laguna": "enee2026",
@@ -21,6 +21,9 @@ const USUARIOS = {
     "tegucigalpa": "enee2026",
     "tocoa": "enee2026"
 };
+
+// LOGO ENEE EN BASE64 (Esto evita errores de CORS y SVG)
+const LOGO_ENEE_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABkCAYAAADD9SRhAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAL9SURBVHgB7Z2hbuNAEEXfS0mFhYWGpQUFBQUV/it8CgsLCwsLCws96SksLCwsLCwsPOnpX6B9idYm2WyS7STvSNo90mY3896MLyvxE0mSpEmS5Inon+v1ei36X2Xf0vS1Z7uX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13Xz9LktWfrUtflS3qX8C71Z56tS13X/7PIn0nSNCXpDwO6+D2n8fD9AAAAAElFTkSuQmCC";
  
 function validarLogin() {
     const u = document.getElementById('user').value.toLowerCase();
@@ -37,18 +40,13 @@ function validarLogin() {
     }
 }
  
-// MAPA PODA (ESRI SATÉLITE)
 function initMapPoda() {
     if (mapP) mapP.remove();
- 
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
- 
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri'
     }).addTo(mapP);
- 
     markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
- 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
             let lat = pos.coords.latitude;
@@ -79,40 +77,27 @@ function marcarGPS(tipo) {
     let lat = Number(p.lat.toFixed(6));
     let lng = Number(p.lng.toFixed(6));
     let c = lat + ", " + lng;
- 
-    if (tipo === 'ini') {
-        gpsIni = c;
-        latIni = lat;
-        lngIni = lng;
-    } else {
-        gpsFin = c;
-        latFin = lat;
-        lngFin = lng;
-    }
- 
+    if (tipo === 'ini') { gpsIni = c; latIni = lat; lngIni = lng; } 
+    else { gpsFin = c; latFin = lat; lngFin = lng; }
     document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
  
 async function generarPDFPoda() {
-    setTimeout(() => { enviarDatosCloudflare(); }, 0);
+    // Intentamos enviar a la nube sin bloquear el PDF
+    enviarDatosCloudflare();
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
  
-    // FUNCIÓN PARA EL ENCABEZADO Y MARCO (Se llama en cada página)
     const aplicarFormatoBase = () => {
-        // Marco exterior
         doc.setDrawColor(0); 
         doc.setLineWidth(0.5); 
         doc.rect(5, 5, 200, 287); 
+        doc.line(5, 35, 205, 35); 
         
-        // Encabezado
-        doc.line(5, 35, 205, 35); // Línea inferior del encabezado
+        // USAMOS EL LOGO EN BASE64 (Formato PNG)
+        doc.addImage(LOGO_ENEE_BASE64, 'PNG', 10, 8, 45, 22);
         
-        // Logo (usando el link de la ENEE)
-        const logoUrl = "https://www.eneeutcd.hn/es/dominios/enee.pagegear.co/plantillas/2024/recursos/logo_utcd.svg";
-        doc.addImage(logoUrl, 'SVG', 10, 8, 45, 22);
-        
-        // Títulos del encabezado
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
         doc.text("EMPRESA NACIONAL DE ENERGÍA ELÉCTRICA", 60, 15);
@@ -133,10 +118,8 @@ async function generarPDFPoda() {
  
     // --- PAGINA 1 ---
     aplicarFormatoBase();
-    
-    // Cuadro de información organizada
     doc.setDrawColor(40);
-    doc.rect(10, 40, 190, 45); // Cuadro para datos
+    doc.rect(10, 40, 190, 45); 
     
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold"); doc.text("CIRCUITO:", 15, 48);
@@ -160,7 +143,6 @@ async function generarPDFPoda() {
     doc.setFont("helvetica", "normal");
     doc.text(`Inicio: ${gpsIni} / Fin: ${gpsFin}`, 55, 78);
  
-    // Fotos principales en Pag 1
     const fGrupo = await leerFoto('f-grupo');
     const fVehiculo = await leerFoto('f-vehiculo');
  
@@ -168,13 +150,11 @@ async function generarPDFPoda() {
         doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA GRUPAL:", 15, 95);
         doc.addImage(fGrupo, 'JPEG', 15, 100, 180, 85);
         doc.rect(15, 100, 180, 85);
-        
         doc.setFont("helvetica", "bold"); doc.text("EVIDENCIA VEHÍCULO:", 15, 195);
         doc.addImage(fVehiculo, 'JPEG', 15, 200, 180, 85);
         doc.rect(15, 200, 180, 85);
     }
  
-    // --- PÁGINAS DE IDENTIDAD ---
     const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
     for(let p of idsPersonal){
         const img = await leerFoto(p.id);
@@ -187,7 +167,6 @@ async function generarPDFPoda() {
         }
     }
  
-    // --- PÁGINA DE SEGUIMIENTO (ANTES, DURANTE, DESPUÉS) ---
     doc.addPage(); 
     aplicarFormatoBase();
     const secciones = [
@@ -198,19 +177,14 @@ async function generarPDFPoda() {
     let y = 45;
     for(let s of secciones){
         doc.setFont("helvetica", "bold"); doc.text(s.t, 15, y); 
-        y+=5; 
-        let x = 10;
+        y+=5; let x = 10;
         for(let id of s.ids){
             const img = await leerFoto(id);
-            if(img){ 
-                doc.addImage(img, 'JPEG', x, y, 62, 70); 
-                doc.rect(x, y, 62, 70); 
-            }
+            if(img){ doc.addImage(img, 'JPEG', x, y, 62, 70); doc.rect(x, y, 62, 70); }
             x+=64;
         }
         y+=75;
     }
- 
     doc.save(`Informe_Poda_${sectorActivo}.pdf`);
 }
  
@@ -222,10 +196,8 @@ function previsualizar(input, idContenedor) {
         reader.onload = function(e) {
             const img = document.createElement('img');
             img.src = e.target.result;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "cover";
-            img.style.borderRadius = "4px";
+            img.style.width = "100%"; img.style.height = "100%";
+            img.style.objectFit = "cover"; img.style.borderRadius = "4px";
             contenedor.appendChild(img);
         }
         reader.readAsDataURL(input.files[0]);
@@ -242,9 +214,11 @@ function enviarDatosCloudflare() {
         gps_final: gpsFin,
         fecha_envio: new Date().toISOString()
     };
+    // El modo 'no-cors' permite enviar aunque el servidor no responda OK
     fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
         method: "POST",
+        mode: "no-cors", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-    }).catch(() => {}); 
+    }).catch(() => { console.log("Cloudflare Error: Ignorado para permitir PDF"); }); 
 }
