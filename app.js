@@ -85,42 +85,48 @@ async function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Función para dibujar el Marco y el Encabezado tipo Excel
     const dibujarEstructuraInstitucional = () => {
-        // 1. MARCO PERIMETRAL DE LA HOJA
+        // 1. MARCO PERIMETRAL
         doc.setDrawColor(0);
         doc.setLineWidth(0.5);
-        doc.rect(5, 5, 200, 287); // El borde exterior
+        doc.rect(5, 5, 200, 287); 
 
-        // 2. CAJETÍN DEL ENCABEZADO (Cuadrícula superior)
+        // 2. CAJETÍN DEL ENCABEZADO
         doc.setLineWidth(0.3);
-        doc.rect(10, 10, 190, 25); // Rectángulo del encabezado
+        doc.rect(10, 10, 190, 25); 
         
-        // Líneas verticales del encabezado
-        doc.line(60, 10, 60, 35);  // Separa Logo de Título
-        doc.line(150, 10, 150, 35); // Separa Título de Control
-        doc.line(170, 18, 200, 18); // Línea interna Versión
-        doc.line(170, 26, 200, 26); // Línea interna Fecha
-        doc.line(170, 10, 170, 35); // Separa etiquetas de valores en control
+        // Líneas verticales
+        doc.line(60, 10, 60, 35);  
+        doc.line(150, 10, 150, 35); 
+        doc.line(170, 10, 170, 35);
 
-        // 3. TEXTOS DEL ENCABEZADO
+        // Líneas horizontales de la derecha (Código, Versión, Fecha)
+        doc.line(150, 18, 200, 18);
+        doc.line(150, 26, 200, 26);
+
+        // 3. TEXTOS CENTRADOS DEL ENCABEZADO
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.text("UTCD", 15, 15);
+        
+        // Bloque Izquierdo (Centrado horizontalmente en su espacio)
+        doc.setFontSize(9);
+        doc.text("UTCD", 35, 16, {align: "center"});
         doc.setFontSize(7);
-        doc.text("UNIDAD TÉCNICA DE CONTROL", 15, 20);
-        doc.text("DE DISTRIBUCIÓN", 15, 24);
+        doc.text("UNIDAD TÉCNICA DE CONTROL", 35, 22, {align: "center"});
+        doc.text("DE DISTRIBUCIÓN", 35, 27, {align: "center"});
 
+        // Bloque Central (Centrado horizontalmente en su espacio)
         doc.setFontSize(11);
-        doc.text("INFORME DE PODA COMUNITARIA", 65, 20);
-        doc.text("SECTOR: " + sectorActivo, 65, 28);
+        doc.text("INFORME DE PODA COMUNITARIA", 105, 19, {align: "center"});
+        doc.text("SECTOR: " + sectorActivo, 105, 27, {align: "center"});
 
+        // Bloque Derecho (Etiquetas y valores)
         doc.setFontSize(8);
         doc.text("Código", 152, 15);
         doc.text("Versión", 152, 23);
-        doc.text("1", 183, 23); // Valor versión
+        doc.setFont("helvetica", "normal");
+        doc.text("1", 185, 23, {align: "center"}); 
+        doc.setFont("helvetica", "bold");
         doc.text("Fecha", 152, 31);
-        // Fecha se deja vacía (en blanco) según tu solicitud
     };
 
     const leerFoto = (id) => {
@@ -133,58 +139,56 @@ async function generarPDFPoda() {
         });
     };
 
-    // --- PÁGINA 1: DATOS Y FOTOS PRINCIPALES ---
+    // --- PÁGINA 1 ---
     dibujarEstructuraInstitucional();
     
-    // Cuadro de Información General (Cajetín de datos)
     doc.setLineWidth(0.2);
     doc.rect(10, 40, 190, 45);
     
     doc.setFontSize(9);
-    let yD = 46;
-    const datos = [
-        `CIRCUITO: ${document.getElementById('poda-circuito').value}`,
-        `ZONA DE TRABAJO: ${document.getElementById('poda-zona').value}`,
-        `HORARIO: INICIO ${document.getElementById('h-ini').value} / FINAL ${document.getElementById('h-fin').value}`,
-        `TRABAJO: Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`,
-        `PAGOS: M.O. L. ${document.getElementById('pago-mo').value} / Transp. L. ${document.getElementById('pago-trans').value} / Personal: ${document.getElementById('poda-personas').value}`,
-        `GPS: Inicio ${gpsIni} | Fin ${gpsFin}`,
-        `RESPONSABLES: ${document.getElementById('resp-super').value} / ${document.getElementById('resp-activ').value}`
-    ];
+    let yD = 47;
 
-    datos.forEach(linea => {
-        doc.text(linea, 15, yD);
-        yD += 6;
-    });
+    const escribirLinea = (label, value, y) => {
+        doc.setFont("helvetica", "bold");
+        doc.text(label, 15, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(String(value), 50, y); // Ajuste de tabulación para el contenido
+    };
+
+    escribirLinea("CIRCUITO:", document.getElementById('poda-circuito').value, yD); yD += 6;
+    escribirLinea("ZONA DE TRABAJO:", document.getElementById('poda-zona').value, yD); yD += 6;
+    escribirLinea("HORARIO:", `INICIO ${document.getElementById('h-ini').value} / FINAL ${document.getElementById('h-fin').value}`, yD); yD += 6;
+    escribirLinea("TRABAJO:", `Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`, yD); yD += 6;
+    escribirLinea("PAGOS:", `M.O. L. ${document.getElementById('pago-mo').value} / Transp. L. ${document.getElementById('pago-trans').value} / Personal: ${document.getElementById('poda-personas').value}`, yD); yD += 6;
+    escribirLinea("GPS:", `Inicio ${gpsIni} | Fin ${gpsFin}`, yD); yD += 6;
+    escribirLinea("RESPONSABLES:", `${document.getElementById('resp-super').value} / ${document.getElementById('resp-activ').value}`, yD);
 
     const fGrupo = await leerFoto('f-grupo');
     const fVehiculo = await leerFoto('f-vehiculo');
 
     if (fGrupo) {
-        doc.text("FOTO GRUPO", 15, 93);
+        doc.setFont("helvetica", "bold"); doc.text("FOTO GRUPO", 15, 93);
         doc.addImage(fGrupo, 'JPEG', 15, 95, 180, 85);
         doc.rect(15, 95, 180, 85);
     }
     if (fVehiculo) {
-        doc.text("FOTO VEHÍCULO", 15, 193);
+        doc.setFont("helvetica", "bold"); doc.text("FOTO VEHÍCULO", 15, 193);
         doc.addImage(fVehiculo, 'JPEG', 15, 195, 180, 85);
         doc.rect(15, 195, 180, 85);
     }
 
-    // --- PÁGINAS DE IDENTIDADES ---
     const ids = [{id:'f-id-f', t:'FOTO DNI FRONTAL'}, {id:'f-id-r', t:'FOTO DNI REVÉS'}];
     for(let p of ids){
         const img = await leerFoto(p.id);
         if(img) {
             doc.addPage();
             dibujarEstructuraInstitucional();
-            doc.text(p.t, 15, 45);
+            doc.setFont("helvetica", "bold"); doc.text(p.t, 15, 45);
             doc.addImage(img, 'JPEG', 15, 50, 180, 230);
             doc.rect(15, 50, 180, 230);
         }
     }
 
-    // --- PÁGINA DE REGISTRO FOTOGRÁFICO (ANTES/DURANTE/DESPUÉS) ---
     doc.addPage();
     dibujarEstructuraInstitucional();
     const secciones = [
