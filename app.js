@@ -1,9 +1,18 @@
+/* =============================
+   VARIABLES GLOBALES
+============================= */
 var mapP, markerP;
+
 var gpsIni = "No marcado", gpsFin = "No marcado";
 var latIni = null, lngIni = null;
 var latFin = null, lngFin = null;
 
-// CREDENCIALES
+// Usuario / sector (temporal – luego se hará dinámico)
+let sectorUsuario = "COMAYAGUA";
+
+/* =============================
+   LOGIN BÁSICO
+============================= */
 const USUARIOS = {
     "admin": "admin123",
     "supervisor": "super123"
@@ -16,32 +25,36 @@ function validarLogin() {
     if (USUARIOS[u] && USUARIOS[u] === p) {
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('form-poda-container').style.display = 'block';
-        document.getElementById('user-display').innerText = "Usuario: " + u.toUpperCase();
+        document.getElementById('user-display').innerText =
+            "Usuario: " + u.toUpperCase() + " | Sector: " + sectorUsuario;
+
         initMapPoda();
     } else {
         document.getElementById('login-error').style.display = 'block';
     }
 }
 
-// MAPA PODA (ESRI SATÉLITE)
+/* =============================
+   MAPA ESRI SATELITAL + GPS
+============================= */
 function initMapPoda() {
     if (mapP) mapP.remove();
 
     mapP = L.map('map-poda').setView([14.65, -86.21], 15);
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community'
-    }).addTo(mapP);
+    L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        { attribution: 'Tiles © Esri' }
+    ).addTo(mapP);
 
     markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
-            let lat = pos.coords.latitude;
-            let lng = pos.coords.longitude;
-            actualizarMarcador(lat, lng);
+            actualizarMarcador(pos.coords.latitude, pos.coords.longitude);
         });
     }
+
     setTimeout(() => mapP.invalidateSize(), 300);
 }
 
@@ -53,6 +66,7 @@ function actualizarMarcador(lat, lng) {
 function ingresarManual() {
     const lat = parseFloat(document.getElementById('manual-lat').value);
     const lng = parseFloat(document.getElementById('manual-lng').value);
+
     if (!isNaN(lat) && !isNaN(lng)) {
         actualizarMarcador(lat, lng);
     } else {
@@ -61,10 +75,10 @@ function ingresarManual() {
 }
 
 function marcarGPS(tipo) {
-    let p = markerP.getLatLng();
-    let lat = Number(p.lat.toFixed(6));
-    let lng = Number(p.lng.toFixed(6));
-    let c = lat + ", " + lng;
+    const p = markerP.getLatLng();
+    const lat = Number(p.lat.toFixed(6));
+    const lng = Number(p.lng.toFixed(6));
+    const c = lat + ", " + lng;
 
     if (tipo === 'ini') {
         gpsIni = c;
@@ -76,126 +90,148 @@ function marcarGPS(tipo) {
         lngFin = lng;
     }
 
-    document.getElementById('coords-display').innerText = `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
+    document.getElementById('coords-display').innerText =
+        `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
 }
 
+/* =============================
+   ENCABEZADO INSTITUCIONAL PDF
+============================= */
+function dibujarEncabezadoPDF(doc) {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const headerHeight = 25;
+
+    // Marco general
+    doc.setLineWidth(0.5);
+    doc.rect(10, 10, pageWidth - 20, headerHeight);
+
+    // Logo / UTCD (texto por ahora)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("UTCD", 14, 20);
+
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text("Unidad Técnica de Control", 14, 24);
+
+    // Título central
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(
+        "INFORME DE PODA COMUNITARIA",
+        pageWidth / 2,
+        18,
+        { align: "center" }
+    );
+
+    doc.setFontSize(10);
+    doc.text(
+        `SECTOR ${sectorUsuario}`,
+        pageWidth / 2,
+        23,
+        { align: "center" }
+    );
+
+    // Cajetín derecho
+    const boxX = pageWidth - 60;
+    doc.rect(boxX, 10, 50, headerHeight);
+
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text("Código:", boxX + 2, 15);
+    doc.text("Versión: 1", boxX + 2, 20);
+    doc.text("Fecha:", boxX + 2, 25);
+}
+
+/* =============================
+   GENERAR PDF PRO (BASE)
+============================= */
 async function generarPDFPoda() {
-    setTimeout(() => { enviarDatosCloudflare(); }, 0);
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const dibujarMarco = () => { doc.setDrawColor(40); doc.setLineWidth(0.5); doc.rect(5, 5, 200, 287); };
 
+    // ======== PÁGINA 1 ========
+    dibujarEncabezadoPDF(doc);
+
+    const startY = 45;
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+
+    doc.text("Circuito:", 15, startY);
+    doc.text("Zona de trabajo:", 15, startY + 6);
+    doc.text("Fecha:", 15, startY + 12);
+    doc.text("Hora:", 15, startY + 18);
+    doc.text("GPS:", 15, startY + 24);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(document.getElementById('poda-circuito').value, 45, startY);
+    doc.text(document.getElementById('poda-zona').value, 45, startY + 6);
+    doc.text(document.getElementById('poda-fecha').value, 45, startY + 12);
+    doc.text(
+        `${document.getElementById('h-ini').value} - ${document.getElementById('h-fin').value}`,
+        45,
+        startY + 18
+    );
+    doc.text(`Inicio ${gpsIni} / Fin ${gpsFin}`, 45, startY + 24);
+
+    doc.rect(12, startY - 5, 185, 35);
+
+    // ===== FOTOS GRUPO / VEHÍCULO =====
     const leerFoto = (id) => {
         const file = document.getElementById(id).files[0];
         if (!file) return null;
         return new Promise(resolve => {
             const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
+            reader.onload = e => resolve(e.target.result);
             reader.readAsDataURL(file);
         });
     };
 
-    dibujarMarco();
-    doc.setFontSize(14); doc.text("INFORME DE PODA COMUNITARIA SECTOR: JUTICALPA", 15, 20);
-    doc.setFontSize(9);
-    doc.text(`CIRCUITO: ${document.getElementById('poda-circuito').value}`, 15, 28);
-    doc.text(`ZONA: ${document.getElementById('poda-zona').value} | FECHA: ${document.getElementById('poda-fecha').value}`, 15, 33);
-    doc.text(`TRABAJO EJECUTADO: Brecha ${document.getElementById('m-brecha').value}m, Poda ${document.getElementById('m-poda').value}m, Postes ${document.getElementById('m-postes').value}`, 15, 38);
-    doc.text(`PAGOS: MO L. ${document.getElementById('pago-mo').value}, Trans L. ${document.getElementById('pago-trans').value}, Personas ${document.getElementById('poda-personas').value}`, 15, 43);
-    doc.text(`RESPONSABLES: Super. ${document.getElementById('resp-super').value}, Contr. ${document.getElementById('resp-activ').value}`, 15, 48);
-    doc.text(`GPS: Inicio ${gpsIni} / Fin ${gpsFin}`, 15, 53);
-
     const fGrupo = await leerFoto('f-grupo');
     const fVehiculo = await leerFoto('f-vehiculo');
-    
-if (fGrupo && fVehiculo) {
-    doc.text("EVIDENCIA GRUPAL:", 15, 63);
-    doc.addImage(fGrupo, 'JPEG', 15, 68, 180, 80);
-    doc.rect(15, 68, 180, 80);
-    
-    doc.text("EVIDENCIA VEHÍCULO:", 15, 155);
-    doc.addImage(fVehiculo, 'JPEG', 15, 160, 180, 80);
-    doc.rect(15, 160, 180, 80);
-} else if (fGrupo) {
-    doc.text("EVIDENCIA GRUPAL:", 15, 63);
-    doc.addImage(fGrupo, 'JPEG', 10, 68, 190, 120);
-    doc.rect(10, 68, 190, 120)
 
+    if (!fGrupo) {
+        alert("La foto GRUPO es obligatoria.");
+        return;
     }
 
-    const idsPersonal = [{id:'f-id-f', t:'IDENTIDAD FRENTE'}, {id:'f-id-r', t:'IDENTIDAD REVÉS'}];
-    for(let p of idsPersonal){
-        const img = await leerFoto(p.id);
-        if(img) {
-            doc.addPage(); dibujarMarco();
-            doc.text(p.t, 15, 15); doc.addImage(img, 'JPEG', 10, 20, 190, 260); doc.rect(10, 20, 190, 260);
-        }
+    let fotoY = startY + 40;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("EVIDENCIA GRUPAL", 15, fotoY);
+    doc.addImage(fGrupo, 'JPEG', 15, fotoY + 5, 180, fVehiculo ? 40 : 80);
+    doc.rect(15, fotoY + 5, 180, fVehiculo ? 40 : 80);
+
+    if (fVehiculo) {
+        let vehY = fotoY + 55;
+        doc.text("EVIDENCIA VEHÍCULO", 15, vehY);
+        doc.addImage(fVehiculo, 'JPEG', 15, vehY + 5, 180, 40);
+        doc.rect(15, vehY + 5, 180, 40);
     }
 
-    doc.addPage(); dibujarMarco();
-    const secciones = [{t:"FOTOS ANTES", ids:['f-ini-1','f-ini-2','f-ini-3']},{t:"FOTOS DURANTE", ids:['f-eje-1','f-eje-2','f-eje-3']},{t:"FOTOS DESPUÉS", ids:['f-fin-1','f-fin-2','f-fin-3']}];
-    let y = 15;
-    for(let s of secciones){
-        doc.text(s.t, 15, y); y+=5; let x = 10;
-        for(let id of s.ids){
-            const img = await leerFoto(id);
-            if(img){ doc.addImage(img, 'JPEG', x, y, 62, 78); doc.rect(x, y, 62, 78); }
-            x+=64;
-        }
-        y+=85;
-    }
-
+    // ===== Guardar PDF =====
     doc.save("Informe_Poda_Final.pdf");
 }
 
+/* =============================
+   PREVISUALIZAR FOTOS
+============================= */
 function previsualizar(input, idContenedor) {
     const contenedor = document.getElementById(idContenedor);
     contenedor.innerHTML = "";
+
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             const img = document.createElement('img');
             img.src = e.target.result;
-            img.style.width = "100%"; img.style.height = "100%";
-            img.style.objectFit = "cover"; img.style.borderRadius = "4px";
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
             contenedor.appendChild(img);
-        }
+        };
         reader.readAsDataURL(input.files[0]);
     }
-}
-// --- ENVÍO DE DATOS A CLOUDFLARE (NO INVASIVO) ---
-function enviarDatosCloudflare() {
-    const data = {
-        circuito: document.getElementById('poda-circuito').value,
-        zona_trabajo: document.getElementById('poda-zona').value,
-        fecha: document.getElementById('poda-fecha').value,
-        hora_inicio: document.getElementById('h-ini').value,
-        hora_final: document.getElementById('h-fin').value,
-
-        gps_inicio: gpsIni,
-        gps_final: gpsFin,
-        lat_inicio: latIni,
-        lng_inicio: lngIni,
-        lat_final: latFin,
-        lng_final: lngFin,
-
-        m_brecha: document.getElementById('m-brecha').value,
-        m_poda: document.getElementById('m-poda').value,
-        m_postes: document.getElementById('m-postes').value,
-
-        personas: document.getElementById('poda-personas').value,
-        pago_mo: document.getElementById('pago-mo').value,
-        pago_trans: document.getElementById('pago-trans').value,
-
-        responsable_super: document.getElementById('resp-super').value,
-        responsable_contratista: document.getElementById('resp-activ').value,
-
-        fecha_envio: new Date().toISOString()
-    };
-
-    fetch("https://api-cuadrillas.cgujuticalpa.workers.dev/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    }).catch(() => {}); 
 }
