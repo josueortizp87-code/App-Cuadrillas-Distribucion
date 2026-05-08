@@ -1,5 +1,5 @@
 /* =============================
-   VARIABLES GLOBALES GPS
+   VARIABLES GLOBALES
 ============================= */
 var mapP, markerP;
 var gpsIni = "No marcado", gpsFin = "No marcado";
@@ -11,20 +11,24 @@ let sectorUsuario = "COMAYAGUA";
 /* =============================
    LOGIN
 ============================= */
-const USUARIOS = { admin: "admin123", supervisor: "super123" };
+const USUARIOS = {
+    admin: "admin123",
+    supervisor: "super123"
+};
 
 function validarLogin() {
-    const u = document.getElementById('user').value;
-    const p = document.getElementById('pass').value;
+    const u = document.getElementById("user").value;
+    const p = document.getElementById("pass").value;
 
     if (USUARIOS[u] && USUARIOS[u] === p) {
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('form-poda-container').style.display = 'block';
-        document.getElementById('user-display').innerText =
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("form-poda-container").style.display = "block";
+        document.getElementById("user-display").innerText =
             "Usuario: " + u.toUpperCase() + " | Sector: " + sectorUsuario;
+
         initMapPoda();
     } else {
-        document.getElementById('login-error').style.display = 'block';
+        document.getElementById("login-error").style.display = "block";
     }
 }
 
@@ -34,18 +38,20 @@ function validarLogin() {
 function initMapPoda() {
     if (mapP) mapP.remove();
 
-    mapP = L.map('map-poda').setView([14.65, -86.21], 15);
+    mapP = L.map("map-poda").setView([14.65, -86.21], 15);
 
     L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        { attribution: '© Esri' }
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { attribution: "© Esri" }
     ).addTo(mapP);
 
     markerP = L.marker([14.65, -86.21], { draggable: true }).addTo(mapP);
 
-    navigator.geolocation?.getCurrentPosition(pos =>
-        actualizarMarcador(pos.coords.latitude, pos.coords.longitude)
-    );
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            actualizarMarcador(pos.coords.latitude, pos.coords.longitude);
+        });
+    }
 
     setTimeout(() => mapP.invalidateSize(), 300);
 }
@@ -56,8 +62,9 @@ function actualizarMarcador(lat, lng) {
 }
 
 function ingresarManual() {
-    const lat = parseFloat(document.getElementById('manual-lat').value);
-    const lng = parseFloat(document.getElementById('manual-lng').value);
+    const lat = parseFloat(document.getElementById("manual-lat").value);
+    const lng = parseFloat(document.getElementById("manual-lng").value);
+
     if (!isNaN(lat) && !isNaN(lng)) {
         actualizarMarcador(lat, lng);
     } else {
@@ -71,32 +78,37 @@ function marcarGPS(tipo) {
     const lng = Number(p.lng.toFixed(6));
     const c = lat + ", " + lng;
 
-    if (tipo === 'ini') {
-        gpsIni = c; latIni = lat; lngIni = lng;
+    if (tipo === "ini") {
+        gpsIni = c;
+        latIni = lat;
+        lngIni = lng;
     } else {
-        gpsFin = c; latFin = lat; lngFin = lng;
+        gpsFin = c;
+        latFin = lat;
+        lngFin = lng;
     }
 
-    document.getElementById('coords-display').innerText =
-        `Inicio: ${gpsIni} | Fin: ${gpsFin}`;
+    document.getElementById("coords-display").innerText =
+        "Inicio: " + gpsIni + " | Fin: " + gpsFin;
 }
 
 /* =============================
-   ENCABEZADO SIN LOGO (ESTABLE)
+   ENCABEZADO PDF (ESTABLE)
 ============================= */
 function dibujarEncabezadoPDF(doc) {
     const pageWidth = doc.internal.pageSize.getWidth();
-    const y = 10, h = 28;
+    const y = 10;
+    const h = 28;
 
     // Izquierda
     doc.rect(10, y, 40, h);
     doc.setFont("helvetica", "bold");
-    doc.text("UTCD", 20, y + 16);
+    doc.text("UTCD", 22, y + 16);
 
     // Centro
     doc.rect(50, y, pageWidth - 120, h);
     doc.text("INFORME DE PODA COMUNITARIA", pageWidth / 2, y + 14, { align: "center" });
-    doc.text(`SECTOR ${sectorUsuario}`, pageWidth / 2, y + 22, { align: "center" });
+    doc.text("SECTOR " + sectorUsuario, pageWidth / 2, y + 22, { align: "center" });
 
     // Derecha
     const cx = pageWidth - 60;
@@ -108,26 +120,29 @@ function dibujarEncabezadoPDF(doc) {
 }
 
 /* =============================
-   PDF (solo prueba estable)
+   GENERAR PDF (PRUEBA ESTABLE)
 ============================= */
-async function generarPDFPoda() {
+function generarPDFPoda() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     dibujarEncabezadoPDF(doc);
 
-    doc.text("PRUEBA DE PDF ESTABLE", 20, 50);
-    doc.text(`GPS: ${gpsIni} / ${gpsFin}`, 20, 60);
+    doc.setFontSize(10);
+    doc.text("PDF DE PRUEBA ESTABLE", 20, 60);
+    doc.text("GPS Inicio: " + gpsIni, 20, 70);
+    doc.text("GPS Fin: " + gpsFin, 20, 80);
 
     doc.save("Informe_Poda_Final.pdf");
 }
 
 /* =============================
-   PREVISUALIZACIÓN
+   PREVISUALIZAR IMÁGENES
 ============================= */
 function previsualizar(input, idContenedor) {
     const cont = document.getElementById(idContenedor);
     cont.innerHTML = "";
+
     if (input.files && input.files[0]) {
         const r = new FileReader();
         r.onload = e => {
